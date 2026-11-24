@@ -2,9 +2,6 @@ package com.shop.backend.member.entity;
 
 import jakarta.persistence.*;
 
-enum Gender{
-    MALE, FEMALE
-}
 @Entity
 @Table(name="user")
 public class User {
@@ -34,7 +31,7 @@ public class User {
     private String address_detail;
 
     @Column(nullable = true)
-    private Gender gender;
+    private String gender;
 
     @Column(nullable = true)
     private String birth_date;
