@@ -1,0 +1,35 @@
+package com.shop.backend.coupon.repository;
+
+import com.shop.backend.coupon.dto.Coupons;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class UserCouponRepository {
+    private final JdbcTemplate jdbcTemplate;
+
+    public List<Coupons> getCoupons(String id, String status){
+        /*
+         * 사용자 소유 쿠폰 리스트 확인
+         */
+        String sql = "SELECT * FROM coupon "
+                + "WHERE coupon_id IN (SELECT coupon_id FROM member_coupon "
+                + "WHERE member_id='" + id + "' AND status='" + status +"')";
+
+        return jdbcTemplate.query(sql,
+                (rs, i) -> new Coupons(
+                        rs.getLong("coupon_id"),
+                        rs.getString("coupon_name"),
+                        rs.getString("discount_type"),
+                        rs.getInt("discount_value"),
+                        rs.getInt("min_order_amount"),
+                        rs.getString("valid_from"),
+                        rs.getString("valid_to"),
+                        status)
+                );
+    }
+}

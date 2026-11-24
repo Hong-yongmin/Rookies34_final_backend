@@ -2,7 +2,9 @@ package com.shop.backend.global.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JwtUtil {
 
     public String generateToken(String id){
