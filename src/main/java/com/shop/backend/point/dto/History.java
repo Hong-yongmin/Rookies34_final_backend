@@ -1,15 +1,12 @@
 package com.shop.backend.point.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@AllArgsConstructor
 @RequiredArgsConstructor
 public class History {
     private String type;

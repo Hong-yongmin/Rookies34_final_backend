@@ -48,7 +48,7 @@ public class AdminCouponRepository {
         String sql;
         int rows;
         for(int i=0; i<target_user_ids.toArray().length; i++){
-            sql = "INSERT INTO member_coupon (member_id, coupon_id, status)"
+            sql = "INSERT INTO member_coupon (user_id, coupon_id, status)"
                     + "VALUES ('"+target_user_ids.get(i)+"', '"+coupon_id+"', 'AVAILABLE')";
             rows = jdbcTemplate.update(sql);
             if (rows <= 0){

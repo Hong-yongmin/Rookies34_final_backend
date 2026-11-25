@@ -4,9 +4,9 @@ import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
 @RequiredArgsConstructor
 public class PointRequest {
     private String type;
-    private int page;
+    private Integer page;
 }

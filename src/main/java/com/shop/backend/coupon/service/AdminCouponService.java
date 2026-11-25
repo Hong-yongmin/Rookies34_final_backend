@@ -19,9 +19,6 @@ import java.time.LocalDate;
 public class AdminCouponService {
     private final AdminCouponRepository adminCouponRepository;
 
-    private static final DateTimeFormatter DATETIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
-
     public AdminCouponResponse generateCoupon(GenerateCouponRequest generateCouponRequest){
         if (adminCouponRepository.generateCoupon(generateCouponRequest)){
             return AdminCouponResponse.builder()

@@ -18,7 +18,7 @@ public class UserCouponRepository {
          */
         String sql = "SELECT * FROM coupon "
                 + "WHERE coupon_id IN (SELECT coupon_id FROM member_coupon "
-                + "WHERE member_id='" + id + "' AND status='" + status +"')";
+                + "WHERE user_id='" + id + "' AND status='" + status +"')";
 
         return jdbcTemplate.query(sql,
                 (rs, i) -> new Coupons(

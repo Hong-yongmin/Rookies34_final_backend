@@ -12,9 +12,9 @@ public class AdminChecker {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public boolean isAdmin(String id) {
+    public Boolean isAdmin(String id) {
         if (id == null) return false;
         String sql = "SELECT 1 FROM admin WHERE admin_id = '"+id+"'";   // 실제 컬럼명으로
-        return jdbcTemplate.queryForList(sql).toArray().length > 0;
+        return jdbcTemplate.queryForList(sql).size() > 0;
     }
 }
