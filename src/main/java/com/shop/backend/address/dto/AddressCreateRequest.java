@@ -1,12 +1,12 @@
 package com.shop.backend.address.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AddressCreateRequest {
     private String user_id;
     private String recipient_name;

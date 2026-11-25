@@ -42,7 +42,7 @@ public class PointRepository {
 
     public int getBalance(String id){
         /*
-         * 사용자의 현재 적립금 잔액 조회
+         * 사용자의 현재 적립금 잔액 계산
          * 잔액은 user 테이블의 point 컬럼에 저장
          */
         String sql = "SELECT point FROM user WHERE user_id='"+id+"'";

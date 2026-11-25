@@ -1,11 +1,11 @@
 package com.shop.backend.address.service;
 
-import com.shop.backend.address.dto.AddressCreateRequest;
-import com.shop.backend.address.dto.AddressResponse;
-import com.shop.backend.address.dto.AddressUpdateRequest;
+import com.shop.backend.address.dto.*;
 import com.shop.backend.address.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +28,14 @@ public class AddressService {
     public AddressResponse deleteAddress(Integer addressId) {
         boolean success = addressRepository.deleteAddress(addressId);
         return AddressResponse.builder().code(success ? "ok" : "no").build();
+    }
+
+    // 조회
+    public AddressesResponse getAddresses(String id){
+        return AddressesResponse.builder()
+                .code("ok")
+                .addresses(addressRepository.getAddresses(id))
+                .build();
     }
 
 }
