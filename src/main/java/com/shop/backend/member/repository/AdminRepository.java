@@ -19,7 +19,7 @@ public class AdminRepository {
         /*
          * 관리자 로그인
          */
-        String sql = "SELECT 1 FROM admin WHERE admin_id='%s' AND password='%s".formatted(id, password);
+        String sql = "SELECT 1 FROM admin WHERE admin_id='%s' AND password='%s'".formatted(id, password);
         return !jdbcTemplate.queryForList(sql).isEmpty();
     }
 
