@@ -20,7 +20,7 @@ public class UserRepository {
         /*
          * 일반 사용자 로그인
          */
-        String sql = "SELECT 1 FROM user WEHRE user_id='%s' AND password='%s'".formatted(id, password);
+        String sql = "SELECT 1 FROM user WHERE user_id='%s' AND password='%s'".formatted(id, password);
         return !jdbcTemplate.queryForList(sql).isEmpty();
     }
 
@@ -57,7 +57,8 @@ public class UserRepository {
             return false;
         }
 
-        return addressRepository.addAddress(AddressCreateRequest.builder() // 주소는 별도 추가
+        return addressRepository.addAddress(AddressCreateRequest.builder()// 주소는 별도 추가
+                        .user_id(req.getLogin_id())
                         .recipient_name(req.getName())
                         .recipient_phone(req.getPhone())
                         .zipcode(req.getZipcode())

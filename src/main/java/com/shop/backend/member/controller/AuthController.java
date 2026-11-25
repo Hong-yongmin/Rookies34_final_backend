@@ -1,18 +1,30 @@
 package com.shop.backend.member.controller;
 
-import com.shop.backend.member.service.AdminService;
-import com.shop.backend.member.service.SellerService;
-import com.shop.backend.member.service.UserService;
+import com.shop.backend.member.dto.LoginRequest;
+import com.shop.backend.member.dto.LoginResponse;
+
+import com.shop.backend.member.service.AuthService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class AuthController {
 
-    private final UserService userService;
-    private final SellerService sellerService;
-    private final AdminService adminService;
+    private final AuthService authService;
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req){
+        return ResponseEntity.status(HttpStatus.OK).body(authService.login(req));
+    }
+
+    @PostMapping("/admin/auth/login")
+    public ResponseEntity<LoginResponse> loginAdmin(@RequestBody LoginRequest req){
+        return ResponseEntity.status(HttpStatus.OK).body(authService.loginAdmin(req));
+    }
 }

@@ -12,9 +12,9 @@ public class AddressRepository {
     private final JdbcTemplate jdbcTemplate;
     //  배송지 추가 성공 시 true 반환
     public Boolean addAddress(AddressCreateRequest req) {
-        String sql = "INSERT INTO address (recipient_name, recipient_phone, zipcode, address, address_detail, is_default) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
-        int rows = jdbcTemplate.update(sql,
+        String sql = "INSERT INTO address (user_id, recipient_name, recipient_phone, zipcode, address, address_detail, is_default) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        int rows = jdbcTemplate.update(sql, req.getUser_id(),
                 req.getRecipient_name(), req.getRecipient_phone(), req.getZipcode(),
                 req.getAddress(), req.getAddress_detail(), Boolean.TRUE.equals(req.getIs_default()));
         return rows > 0;

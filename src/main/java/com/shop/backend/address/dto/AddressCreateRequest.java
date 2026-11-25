@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AddressCreateRequest {
+    private String user_id;
     private String recipient_name;
     private String recipient_phone;
     private String zipcode;
