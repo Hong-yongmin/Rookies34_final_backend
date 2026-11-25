@@ -30,7 +30,7 @@ public class ProductInquiry {
 
     private LocalDateTime answered_at;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime created_at;
 
     @Column(length = 1000)
@@ -48,5 +48,6 @@ public class ProductInquiry {
 
     public void writeAnswer(String answer) {
         this.answer = answer;
+        this.answered_at = LocalDateTime.now();
     }
 }

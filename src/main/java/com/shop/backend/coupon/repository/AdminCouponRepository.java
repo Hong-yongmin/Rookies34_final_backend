@@ -27,11 +27,13 @@ public class AdminCouponRepository {
          * 쿠폰 등록
          * 쿼리가 문제없이 실행되면 true 반환
          */
+        Integer minOrderAmount = req.getMin_order_amount();
+        if (minOrderAmount == null) minOrderAmount = 0;
         String sql = "INSERT INTO coupon (coupon_name, discount_type, discount_value, min_order_amount, valid_from, valid_to) "
                 + "VALUES ('" + req.getCoupon_name() + "',"
                 + "'" + req.getDiscount_type() + "',"
                 + req.getDiscount_value() + ","
-                + req.getMin_order_amount() + ","
+                + minOrderAmount + ","
                 + "'" + req.getValid_from() + "',"
                 + "'" + req.getValid_to() + "')";
         int rows = jdbcTemplate.update(sql);

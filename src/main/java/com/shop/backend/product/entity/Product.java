@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,8 +64,8 @@ public class Product {
     @Column(nullable = false)
     private String status = "PENDING";   // 상태: PENDING(검증대기) → APPROVED(승인)
 
-    @Column(nullable = true)
-    private LocalDateTime created_at;
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    private LocalDate created_at;
 
     public Product() {}   // JPA용 기본 생성자
 }
