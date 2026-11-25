@@ -1,6 +1,7 @@
 package com.shop.backend.member.service;
 
 import com.shop.backend.global.common.FileUploader;
+import com.shop.backend.global.security.JwtUtil;
 import com.shop.backend.member.dto.*;
 import com.shop.backend.member.repository.SellerRepository;
 import com.shop.backend.member.repository.UserRepository;
@@ -15,6 +16,7 @@ public class SellerService {
     private final SellerRepository sellerRepository;
     private final UserRepository userRepository;
     private final FileUploader fileUploader;
+    private final JwtUtil jwtUtil;
 
     private static final String CERT_DIR = "cert"; // 사업자등록증 저장 폴더 ({uploadDir}/cert)
 
@@ -22,6 +24,20 @@ public class SellerService {
     private MemberResponse no(){ return MemberResponse.builder().code("no").build(); }
 
     private boolean isBlank(String v){ return v == null || v.isBlank(); }
+
+    public LoginResponse loginSeller(String login_id, String password){
+        if( sellerRepository.loginSeller(login_id, password)){
+            return LoginResponse.builder()
+                    .code("ok")
+                    .token(jwtUtil.generateToken(login_id))
+                    .build();
+        }
+        else{
+            return LoginResponse.builder()
+                    .code("no")
+                    .build();
+        }
+    }
 
     public MemberResponse signupSeller(SellerSignupRequest req){
         // 필수 항목 확인

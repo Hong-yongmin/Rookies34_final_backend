@@ -16,6 +16,14 @@ public class UserRepository {
     private final AddressRepository addressRepository;
     private final CommonFunction cf;
 
+    public Boolean loginUser(String id, String password){
+        /*
+         * 일반 사용자 로그인
+         */
+        String sql = "SELECT 1 FROM user WEHRE user_id='%s' AND password='%s'".formatted(id, password);
+        return !jdbcTemplate.queryForList(sql).isEmpty();
+    }
+
     public Boolean checkUserId(String id){
         /*
          * 일반 사용자 id 중복여부 확인

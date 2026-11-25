@@ -1,5 +1,6 @@
 package com.shop.backend.member.service;
 
+import com.shop.backend.global.security.JwtUtil;
 import com.shop.backend.member.dto.*;
 import com.shop.backend.member.repository.SellerRepository;
 import com.shop.backend.member.repository.UserRepository;
@@ -11,12 +12,26 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
+    private final JwtUtil jwtUtil;
 
     private MemberResponse ok(){ return MemberResponse.builder().code("ok").build(); }
     private MemberResponse no(){ return MemberResponse.builder().code("no").build(); }
 
     private boolean isBlank(String v){ return v == null || v.isBlank(); }
 
+    public LoginResponse userLogin(String login_id, String password){
+        if( userRepository.loginUser(login_id, password)){
+            return LoginResponse.builder()
+                    .code("ok")
+                    .token(jwtUtil.generateToken(login_id))
+                    .build();
+        }
+        else{
+            return LoginResponse.builder()
+                    .code("no")
+                    .build();
+        }
+    }
     public MemberResponse checkId(String login_id){
         // 구매자·판매자 공용 두 테이블 모두 확인
         if (isBlank(login_id)){
