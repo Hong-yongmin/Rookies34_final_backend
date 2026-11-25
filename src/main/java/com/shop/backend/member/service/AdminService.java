@@ -1,5 +1,6 @@
 package com.shop.backend.member.service;
 
+import com.shop.backend.global.security.JwtUtil;
 import com.shop.backend.member.dto.*;
 import com.shop.backend.member.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminService {
     private final AdminRepository adminRepository;
+    private final JwtUtil jwtUtil;
+
+    public LoginResponse loginAdmin(String login_id, String password){
+        if( adminRepository.loginAdmin(login_id, password)){
+            return LoginResponse.builder()
+                    .code("ok")
+                    .token(jwtUtil.generateToken(login_id))
+                    .build();
+        }
+        else{
+            return LoginResponse.builder()
+                    .code("no")
+                    .build();
+        }
+    }
 
     public AdminMemberListResponse getMembers(String keyword, String role, String status, Integer page){
         List<AdminMemberInfo> users = new ArrayList<>();

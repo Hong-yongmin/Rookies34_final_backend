@@ -15,6 +15,13 @@ public class AdminRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    public Boolean loginAdmin(String id, String password){
+        /*
+         * 관리자 로그인
+         */
+        String sql = "SELECT 1 FROM admin WHERE admin_id='%s' AND password='%s".formatted(id, password);
+    }
+
     public List<AdminMemberInfo> getUsersInfo(String keyword, String status, Integer page){
         /*
          * 관리자의 사용자 정보 조회
