@@ -32,11 +32,10 @@ public class PointRepository {
         }
 
         return jdbcTemplate.query(sql,
-                (rs, i)-> new History(
-                        rs.getString("h.type"),
-                        rs.getInt("h.amount"),
-                        rs.getString("h.reason"),
-                        rs.getDate("o.ordered_at")
-                ));
+                (rs, i)-> History.builder()
+                        .type(rs.getString("h.type"))
+                        .amount(rs.getInt("h.amount"))
+                        .reason(rs.getString("h.reason"))
+                        .created_at(rs.getDate("o.ordered_at")).build());
     }
 }

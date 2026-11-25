@@ -16,4 +16,7 @@ public class SellerSignupRequest {
     private String business_reg_no;
     private String business_name;
     private String cert_file_path;
+    private String bank;
+    private String account_no;
+    private String account_holder;
 }

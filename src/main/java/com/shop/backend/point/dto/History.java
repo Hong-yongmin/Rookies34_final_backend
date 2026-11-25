@@ -6,8 +6,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Builder
 public class History {
     private String type;
     private int amount;

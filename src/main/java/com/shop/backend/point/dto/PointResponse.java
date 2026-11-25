@@ -7,7 +7,6 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@RequiredArgsConstructor
 public class PointResponse {
     private String code;
     private int balance;
