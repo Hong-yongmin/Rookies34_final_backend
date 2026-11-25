@@ -13,4 +13,5 @@ public class UserInfo {
     private final String phone;
     private final String gender;
     private final String birth_date;
+    private final String created_at;
 }

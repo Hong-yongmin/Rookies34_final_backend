@@ -11,7 +11,7 @@ public class Coupon {
     @Column(name="coupon_id")
     private Long coupon_id;
 
-    @Column(name="coupone_code", nullable = true, unique = true)
+    @Column(name="coupon_code", nullable = true, unique = true)
     private String coupon_code;
 
     @Column(name="coupon_name", nullable = false)
@@ -21,7 +21,7 @@ public class Coupon {
     private String discount_type;
 
     @Column(name="discount_value", nullable = false)
-    private String discount_value;
+    private int discount_value;
 
     @Column(name="min_order_amount", nullable = true)
     private int min_order_amount;

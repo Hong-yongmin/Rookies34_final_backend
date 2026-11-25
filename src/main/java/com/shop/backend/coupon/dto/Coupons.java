@@ -14,6 +14,6 @@ public class Coupons {
     private int discount_value;
     private int min_order_amount;
     private String valid_from;
-    private String Valid_to;
+    private String valid_to;
     private String status;
 }

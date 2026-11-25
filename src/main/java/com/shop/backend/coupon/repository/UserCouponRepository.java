@@ -17,8 +17,11 @@ public class UserCouponRepository {
          * 사용자 소유 쿠폰 리스트 확인
          */
         String sql = "SELECT * FROM coupon "
-                + "WHERE coupon_id IN (SELECT coupon_id FROM member_coupon "
-                + "WHERE user_id='" + id + "' AND status='" + status +"')";
+                + "WHERE coupon_id IN (SELECT coupon_id FROM user_coupon "
+                + "WHERE user_id='" + id;
+        if(status != null ){
+            sql += " AND status='%s'".formatted(status);
+        }
 
         return jdbcTemplate.query(sql,
                 (rs, i) -> new Coupons(

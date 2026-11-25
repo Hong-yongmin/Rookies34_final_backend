@@ -31,7 +31,7 @@ public class AdminCouponService {
     }
 
     public AdminCouponResponse grantCoupon(Long coupon_id, List<String> target_user_ids){
-        if (adminCouponRepository.isValidCoupon(coupon_id)){
+        if (!adminCouponRepository.isValidCoupon(coupon_id)){ // 유효하지 않은 쿠폰이면 실패
             return AdminCouponResponse.builder()
                     .code("no")
                     .build();

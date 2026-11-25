@@ -20,7 +20,8 @@ public class UserCouponController {
 
     @GetMapping("/coupons")
     public ResponseEntity<CouponListResponse> myCoupons(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id, @RequestParam String status){
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @RequestParam(required = false) String status){
         if (!userChecker.isUser(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
         }

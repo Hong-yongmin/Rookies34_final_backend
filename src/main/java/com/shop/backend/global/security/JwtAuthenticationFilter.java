@@ -27,8 +27,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            String id = jwtUtil.extractClaims(token);
-            request.setAttribute(MEMBER_ID, id);
+            try {
+                String id = jwtUtil.extractClaims(token);
+                request.setAttribute(MEMBER_ID, id);
+            } catch (JwtException | IllegalArgumentException e) {
+                // 형식이 잘못된 토큰은 비로그인 상태로 처리
+            }
         }
+        chain.doFilter(request, response); // 다음 필터/컨트롤러로 요청 전달
     }
 }

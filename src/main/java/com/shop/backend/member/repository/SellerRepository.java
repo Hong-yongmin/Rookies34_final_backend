@@ -22,6 +22,15 @@ public class SellerRepository {
         return jdbcTemplate.queryForList(sql).size() == 0;
     }
 
+    public Boolean checkSellerPassword(String id, String password){
+        /*
+         * 판매자 현재 비밀번호 확인
+         * 일치하면 true 반환
+         */
+        String sql = "SELECT 1 FROM seller WHERE seller_id='"+id+"' AND password='"+password+"'";
+        return jdbcTemplate.queryForList(sql).size() > 0;
+    }
+
     public Boolean signupSeller(SellerSignupRequest req){
         /*
          * 판매자 회원가입 쿼리
@@ -29,7 +38,7 @@ public class SellerRepository {
          * 쿼리 실행 성공 시 true 반환
          */
         String sql = "INSERT INTO seller (seller_id, password, manager_name, email, phone, business_reg_no, " +
-                "business_name, cert_file_path, status, bank, account_no, account_holder) VALUES("
+                "business_name, cert_file_url, status, bank, account_no, account_holder) VALUES("
                 + cf.q(req.getLogin_id()) + "," + cf.q(req.getPassword()) + "," + cf.q(req.getManager_name()) + ","
                 + cf.q(req.getEmail()) + "," + cf.q(req.getPhone()) + "," + cf.q(req.getBusiness_reg_no()) + ","
                 + cf.q(req.getBusiness_name()) + "," + cf.q(req.getCert_file_path()) + ", 'PENDING', "
@@ -43,7 +52,7 @@ public class SellerRepository {
          * 판매자 비밀번호 변경
          * 쿼리 실행 성공 시 true 반환
          */
-        String sql = "UPDATE seller SET password='"+password+"' WHERE seller_id=id";
+        String sql = "UPDATE seller SET password='"+password+"' WHERE seller_id='"+id+"'";
         int rows = jdbcTemplate.update(sql);
         return rows > 0;
     }
@@ -53,14 +62,37 @@ public class SellerRepository {
          * 판매자 정보 조회
          */
         String sql = "SELECT * FROM seller WHERE seller_id='"+id+"'";
-        return jdbcTemplate.queryForObject(sql, SellerInfo.class);
+        return jdbcTemplate.queryForObject(sql,
+                (rs, i) -> SellerInfo.builder()
+                        .manager_name(rs.getString("manager_name"))
+                        .email(rs.getString("email"))
+                        .phone(rs.getString("phone"))
+                        .business_reg_no(rs.getString("business_reg_no"))
+                        .business_name(rs.getString("business_name"))
+                        .cert_file_url(rs.getString("cert_file_url"))
+                        .bank(rs.getString("bank"))
+                        .account_no(rs.getString("account_no"))
+                        .account_holder(rs.getString("account_holder"))
+                        .status(rs.getString("status"))
+                        .created_at(rs.getString("created_at")).build());
     }
 
-//    public Boolean changeSellerInfo(String id, SellerInfo req){
-//        /*
-//         * 판매자 정보 수정
-//         */
-//        //String sql = "UPDATE seller SET "
-//         //       + ""
-//    }
+    public Boolean changeSellerInfo(String id, SellerInfo req){
+        /*
+         * 판매자 정보 수정
+         */
+        String sql = "UPDATE seller SET "
+                + "manager_name=" + cf.q(req.getManager_name()) + ","
+                + "email=" + cf.q(req.getEmail()) + ","
+                + "phone=" + cf.q(req.getPhone()) + ","
+                + "business_reg_no=" + cf.q(req.getBusiness_reg_no()) + ","
+                + "business_name=" + cf.q(req.getBusiness_name()) + ","
+                + "cert_file_url=" + cf.q(req.getCert_file_url()) + ","
+                + "bank=" + cf.q(req.getBank()) + ","
+                + "account_no=" + cf.q(req.getAccount_no()) + ","
+                + "account_holder=" + cf.q(req.getAccount_holder()) + " "
+                + "WHERE seller_id='" + id + "'";
+        int rows = jdbcTemplate.update(sql);
+        return rows > 0;
+    }
 }

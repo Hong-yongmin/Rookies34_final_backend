@@ -19,17 +19,8 @@ public class PointService {
 
         return PointResponse.builder()
                 .code("ok")
-                .balance(getBalance(id))
+                .balance(pointRepository.getBalance(id)) // 잔액은 user.point 값 사용
                 .num(histories.size())
                 .histories(histories).build();
-    }
-
-    private int getBalance(String id){ // point_history의 내역을 모두 확인하여 현재 잔액 계산
-        List<History> histories = pointRepository.getHistories(id, null);
-        int sum = 0;
-        for(History h : histories){
-            sum += h.getAmount();
-        }
-        return sum;
     }
 }

@@ -8,14 +8,15 @@ import lombok.Setter;
 @Setter
 @Builder
 public class SellerInfo {
-    private String manager_name;
-    private String email;
-    private String phone;
-    private String business_reg_no;
-    private String business_name;
-    private String cert_file_url;
-    private String bank;
-    private String account_no;
-    private String account_holder;
-    private String status;
+    private final String manager_name;
+    private final String email;
+    private final String phone;
+    private final String business_reg_no;
+    private final String business_name;
+    private final String cert_file_url;
+    private final String bank;
+    private final String account_no;
+    private final String account_holder;
+    private final String status;
+    private final String created_at;
 }

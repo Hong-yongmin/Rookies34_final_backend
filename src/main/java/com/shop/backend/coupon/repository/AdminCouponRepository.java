@@ -19,8 +19,7 @@ public class AdminCouponRepository {
          * 유효하면 true 반환
          */
         String sql = "SELECT 1 FROM coupon WHERE coupon_id=" + coupon_id
-                + "AND (CURDATE() BETWEEN valid_from AND valid_to)"
-                + "AND status='AVAILABLE'";
+                + " AND (CURDATE() BETWEEN valid_from AND valid_to)";
         return jdbcTemplate.queryForList(sql).toArray().length > 0;
     }
     public Boolean generateCoupon(GenerateCouponRequest req){
@@ -30,10 +29,10 @@ public class AdminCouponRepository {
          */
         String sql = "INSERT INTO coupon (coupon_name, discount_type, discount_value, min_order_amount, valid_from, valid_to) "
                 + "VALUES ('" + req.getCoupon_name() + "',"
-                + "'" + req.getDiscount_type() + "'"
-                + req.getDiscount_value()
-                + req.getMin_order_amount()
-                + "'" + req.getValid_from() + "'"
+                + "'" + req.getDiscount_type() + "',"
+                + req.getDiscount_value() + ","
+                + req.getMin_order_amount() + ","
+                + "'" + req.getValid_from() + "',"
                 + "'" + req.getValid_to() + "')";
         int rows = jdbcTemplate.update(sql);
         return rows > 0;
@@ -48,7 +47,7 @@ public class AdminCouponRepository {
         String sql;
         int rows;
         for(int i=0; i<target_user_ids.toArray().length; i++){
-            sql = "INSERT INTO member_coupon (user_id, coupon_id, status)"
+            sql = "INSERT INTO user_coupon (user_id, coupon_id, status) "
                     + "VALUES ('"+target_user_ids.get(i)+"', '"+coupon_id+"', 'AVAILABLE')";
             rows = jdbcTemplate.update(sql);
             if (rows <= 0){
