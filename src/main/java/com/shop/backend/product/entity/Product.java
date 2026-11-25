@@ -2,17 +2,23 @@ package com.shop.backend.product.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Entity
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String seller_id;
 
     @Column(nullable = false)
     private String name;            // 상품명 (최대 100)
@@ -49,8 +55,11 @@ public class Product {
     private boolean new_arrival;
     private boolean benefit;
 
+    @Column(nullable = false)
+    private String status = "PENDING";   // 상태: PENDING(검증대기) → APPROVED(승인)
+
     @Column(nullable = true)
     private LocalDateTime created_at = LocalDateTime.now();
 
-    protected Product() {}   // JPA용 기본 생성자
+    public Product() {}   // JPA용 기본 생성자
 }
