@@ -87,7 +87,7 @@ public class AdminRepository {
 
         String memo = req.getMemo();
         if (memo != null && !memo.isBlank()){ // 사유가 있는 경우만 저장
-            sql = "INSERT INTO reason (user_id, reason) VALUES ('%s', '%s')".formatted(id, memo);
+            sql = "INSERT INTO user_reason (user_id, reason) VALUES ('%s', '%s')".formatted(id, memo);
             rows = jdbcTemplate.update(sql);
             return rows > 0;
         }
@@ -121,10 +121,44 @@ public class AdminRepository {
         }
 
         if (status.equals("REJECTED")){ // 반려 시 사유 저장
-            sql = "INSERT INTO reason (seller_id, reason) VALUES ('%s', '%s')".formatted(id, reject_reason);
+            sql = "INSERT INTO seller_reason (seller_id, reason) VALUES ('%s', '%s')".formatted(id, reject_reason);
             rows = jdbcTemplate.update(sql);
             return rows > 0;
         }
         return true;
     }
+
+//    public Boolean changeProductStatus(String id, ProductStatusRequest req){
+//        /*
+//         * 판매자 입점 승인, 거절 등 상태 변경
+//         * REJECT인 경우 reject_reason 필수, reason 테이블에 사유 저장
+//         * 쿼리 실행 성공 시 true 반환
+//         */
+//        String decision = req.getDecision();
+//        String reject_reason = req.getReject_reason();
+//        String status;
+//        if ("APPROVE".equals(decision)){
+//            status = "APPROVED";
+//        } else if ("REJECT".equals(decision)){
+//            if (reject_reason == null || reject_reason.isBlank()){ // 반려 사유 누락
+//                return false;
+//            }
+//            status = "REJECTED";
+//        } else {
+//            return false;
+//        }
+//
+//        String sql = "UPDATE product SET status='%s' WHERE product_id='%s'".formatted(status, id);
+//        int rows = jdbcTemplate.update(sql);
+//        if (rows <= 0){ // 해당 판매자가 없으면 실패
+//            return false;
+//        }
+//
+//        if (status.equals("")){ // 반려 시 사유 저장
+//            sql = "INSERT INTO product_reason (seller_id, reason) VALUES ('%s', '%s')".formatted(id, reject_reason);
+//            rows = jdbcTemplate.update(sql);
+//            return rows > 0;
+//        }
+//        return true;
+//    }
 }

@@ -15,6 +15,7 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     private Long id;
 
     @Column(nullable = false)
@@ -42,11 +43,16 @@ public class Product {
     @Column(length = 2000, nullable = true)
     private String description;    // 상품 설명 (HTML)
 
-    @Column(nullable = false)
+    @Column(name = "thumbnail_url", length = 2048, nullable = false)
     private String thumbnail;      // 대표 이미지 URL
 
-    @Column(nullable = true)
     @ElementCollection
+    @CollectionTable(
+            name = "product_image",
+            joinColumns = @JoinColumn(name = "product_id")
+    )
+    @Column(name = "url", length = 2048, nullable = false)
+    @OrderColumn(name = "sort_order")
     private List<String> detail_images = new ArrayList<>();  // 이미지 목록(최대 10)
 
     // 큐레이션(관리자 지정): BEST/SALE/NEW/BENEFIT
@@ -59,7 +65,7 @@ public class Product {
     private String status = "PENDING";   // 상태: PENDING(검증대기) → APPROVED(승인)
 
     @Column(nullable = true)
-    private LocalDateTime created_at = LocalDateTime.now();
+    private LocalDateTime created_at;
 
     public Product() {}   // JPA용 기본 생성자
 }
