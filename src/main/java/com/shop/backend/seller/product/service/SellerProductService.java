@@ -4,6 +4,10 @@ import com.shop.backend.product.entity.Product;
 import com.shop.backend.product.repository.ProductRepository;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +24,12 @@ import java.util.UUID;
 
 public class SellerProductService {
     private final ProductRepository productRepository;
+
+    // 내 상품 목록 조회 (S-11)
+    public Page<Product> getMyProducts(String sellerId, String status, String keyword, int page) {
+        Pageable pageable = PageRequest.of(page - 1, 20, Sort.by("createdAt").descending());
+        return productRepository.findSellerProducts(sellerId, status, keyword, pageable);
+    }
 
     // 상품 등록 (S-02)
     public void register(SellerProductRequest req, String sellerId) {

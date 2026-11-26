@@ -55,11 +55,10 @@ public class Product {
     @OrderColumn(name = "sort_order")
     private List<String> detail_images = new ArrayList<>();  // 이미지 목록(최대 10)
 
-    // 큐레이션(관리자 지정): BEST/SALE/NEW/BENEFIT
-    private boolean best;
-    private boolean sale;
-    private boolean new_arrival;
-    private boolean benefit;
+    // 큐레이션(관리자 지정): BEST/SALE/NEW_ARRIVAL/BENEFIT — null=미지정
+    @Enumerated(EnumType.STRING)
+    @Column(name = "curation")
+    private Curation curation;
 
     @Column(nullable = false)
     private String status = "PENDING";   // 상태: PENDING(검증대기) → APPROVED(승인)
