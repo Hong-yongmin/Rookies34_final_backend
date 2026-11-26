@@ -41,7 +41,7 @@ public class ProductRepository {
     // 카테고리별 목록 (U-20)
     public List<ProductSummaryResponse> getListByCategory(Long categoryId, ProductSort sort, int page) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
-                + "FROM product WHERE category_id=%d %s LIMIT 20 OFFSET %d")
+                + "FROM product WHERE category_id=%d AND status='APPROVED' %s LIMIT 20 OFFSET %d")
                 .formatted(categoryId, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
     }
@@ -49,7 +49,7 @@ public class ProductRepository {
     // 큐레이션별 목록 (U-20) — curation enum
     public List<ProductSummaryResponse> getListByCuration(String curation, ProductSort sort, int page) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
-                + "FROM product WHERE curation='%s' %s LIMIT 20 OFFSET %d")
+                + "FROM product WHERE curation='%s' AND status='APPROVED' %s LIMIT 20 OFFSET %d")
                 .formatted(curation, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
     }
@@ -57,7 +57,7 @@ public class ProductRepository {
     // 검색 (U-21) — 상품명 LIKE
     public List<ProductSummaryResponse> search(String keyword, ProductSort sort, int page) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
-                + "FROM product WHERE name LIKE '%%%s%%' %s LIMIT 20 OFFSET %d")
+                + "FROM product WHERE name LIKE '%%%s%%' AND status='APPROVED' %s LIMIT 20 OFFSET %d")
                 .formatted(keyword, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
     }
@@ -66,7 +66,7 @@ public class ProductRepository {
     public ProductDetailResponse getDetail(Long productId) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, stock, "
                 + "storage_type, origin, description, thumbnail_url "
-                + "FROM product WHERE product_id=%d").formatted(productId);
+                + "FROM product WHERE product_id=%d AND status='APPROVED'").formatted(productId);
         List<ProductDetailResponse> list = jdbcTemplate.query(sql, (rs, i) ->
                 ProductDetailResponse.builder()
                         .product_id(rs.getLong("product_id"))
@@ -94,5 +94,12 @@ public class ProductRepository {
         String sql = "SELECT name FROM product WHERE product_id=%d".formatted(productId);
         List<String> list = jdbcTemplate.query(sql, (rs, i) -> rs.getString("name"));
         return list.isEmpty() ? "" : list.get(0);
+    }
+
+    // 상태 변경 (A-05 승인/반려/철회) — 영향받은 행 수 반환 (0이면 해당 상품 없음)
+    public int updateStatus(Long productId, String status) {
+        String sql = "UPDATE product SET status='%s' WHERE product_id=%d"
+                .formatted(status, productId);
+        return jdbcTemplate.update(sql);
     }
 }
