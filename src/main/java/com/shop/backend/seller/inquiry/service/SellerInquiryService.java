@@ -1,6 +1,5 @@
 package com.shop.backend.seller.inquiry.service;
 
-import com.shop.backend.product.entity.Product;
 import com.shop.backend.product.repository.ProductRepository;
 import com.shop.backend.productinquiry.entity.ProductInquiry;
 import com.shop.backend.productinquiry.repository.ProductInquiryRepository;
@@ -26,9 +25,7 @@ public class SellerInquiryService {
 
     // 상품명 조회 (응답에 product_name 담기용)
     public String productName(Long productId) {
-        return productRepository.findById(productId)
-                .map(Product::getName)
-                .orElse("");
+        return productRepository.getProductName(productId);
     }
 
     // 문의 답변 (S-06)

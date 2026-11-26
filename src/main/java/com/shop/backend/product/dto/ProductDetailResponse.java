@@ -1,11 +1,14 @@
 package com.shop.backend.product.dto;
 
-import com.shop.backend.product.entity.Product;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import java.util.List;
 
-// 상품 상세 응답용
+// 상품 상세 응답용 — JdbcTemplate RowMapper로 매핑
 @Getter
+@Setter
+@Builder
 public class ProductDetailResponse {
 
     private Long product_id;
@@ -17,20 +20,6 @@ public class ProductDetailResponse {
     private String storage_type;
     private String origin;
     private String description;
-    private String thumbnail;
-    private List<String> detail_images;
-
-    public ProductDetailResponse(Product p) {
-        this.product_id = p.getId();
-        this.name = p.getName();
-        this.category_id = p.getCategory_id();
-        this.price = p.getPrice();
-        this.discount_rate = p.getDiscount_rate();
-        this.stock = p.getStock();
-        this.storage_type = p.getStorage_type() != null ? p.getStorage_type().name() : null;
-        this.origin = p.getOrigin();
-        this.description = p.getDescription();
-        this.thumbnail = p.getThumbnail();
-        this.detail_images = p.getDetail_images();
-    }
+    private String thumbnail;              // DB thumbnail_url → 응답 thumbnail
+    private List<String> detail_images;    // product_image 테이블에서 별도 조회
 }

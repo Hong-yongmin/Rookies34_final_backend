@@ -1,13 +1,9 @@
 package com.shop.backend.seller.product.service;
 
-import com.shop.backend.product.entity.Product;
-import com.shop.backend.product.repository.ProductRepository;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
+import com.shop.backend.seller.product.dto.SellerProductResponse;
+import com.shop.backend.seller.product.repository.SellerProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,89 +17,59 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-
 public class SellerProductService {
-    private final ProductRepository productRepository;
+    private final SellerProductRepository sellerProductRepository;
 
     // 내 상품 목록 조회 (S-11)
-    public Page<Product> getMyProducts(String sellerId, String status, String keyword, int page) {
-        Pageable pageable = PageRequest.of(page - 1, 20, Sort.by("createdAt").descending());
-        return productRepository.findSellerProducts(sellerId, status, keyword, pageable);
+    public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
+        return sellerProductRepository.getMyProducts(sellerId, status, keyword, page);
     }
 
     // 상품 등록 (S-02)
     public void register(SellerProductRequest req, String sellerId) {
-        Product p = new Product();
-        p.setName(req.getName());
-        p.setCategory_id(req.getCategory_id());
-        p.setPrice(req.getPrice());
-        p.setDiscount_rate(req.getDiscount_rate() != null ? req.getDiscount_rate() : 0);
-        p.setStock(req.getStock());
-        p.setStorage_type(req.getStorage_type());
-        p.setOrigin(req.getOrigin());
-        p.setDescription(req.getDescription());
+        // 썸네일 저장 → 경로
+        String thumbnailUrl = saveFile(req.getThumbnail());
 
-        p.setSeller_id(sellerId);     // 토큰에서 온 login_id
-        p.setStatus("PENDING");       // 등록 시 검증 대기
+        // 상품 insert → 생성된 product_id
+        Long productId = sellerProductRepository.insertProduct(req, sellerId, thumbnailUrl);
 
-        // 썸네일 저장
-        p.setThumbnail(saveFile(req.getThumbnail()));
-
-        // 상세 이미지 저장
-        List<String> detailPaths = new ArrayList<>();
-        if (req.getDetail_images() != null) {
-            for (MultipartFile f : req.getDetail_images()) {
-                String path = saveFile(f);
-                if (path != null) detailPaths.add(path);
-            }
+        // 상세 이미지 저장 → product_image
+        List<String> detailPaths = saveDetailImages(req.getDetail_images());
+        if (productId != null && !detailPaths.isEmpty()) {
+            sellerProductRepository.insertImages(productId, detailPaths);
         }
-        p.setDetail_images(detailPaths);
-
-        productRepository.save(p);
     }
 
-    // 상품 수정 (S-02)
+    // 상품 수정 (S-02) — 본인 상품 확인 생략(수평권한 진단 포인트)
     public void update(Long productId, SellerProductRequest req, String sellerId) {
-        Product p = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품 없음: " + productId));
+        String thumbnailUrl = saveFile(req.getThumbnail());   // 새 파일 없으면 null
+        sellerProductRepository.updateProduct(productId, req, thumbnailUrl);
 
-        // 본인 상품 확인 생략 → 타 판매자 상품 수정
-
-        p.setName(req.getName());
-        p.setCategory_id(req.getCategory_id());
-        p.setPrice(req.getPrice());
-        p.setDiscount_rate(req.getDiscount_rate() != null ? req.getDiscount_rate() : 0);
-        p.setStock(req.getStock());
-        p.setStorage_type(req.getStorage_type());
-        p.setOrigin(req.getOrigin());
-        p.setDescription(req.getDescription());
-
-        // 새로운 썸네일이 있을 때만 저장
-        String newThumbnailUrl = saveFile(req.getThumbnail());
-        if (newThumbnailUrl != null) {
-            p.setThumbnail(newThumbnailUrl);
-        }
-
-        // 상세 이미지들 저장
-        List<String> detailPaths = new ArrayList<>();
-        if (req.getDetail_images() != null) {
-            for (MultipartFile f : req.getDetail_images()) {
-                String path = saveFile(f);
-                if (path != null) detailPaths.add(path);
-            }
-        }
+        // 상세 이미지가 새로 오면 교체
+        List<String> detailPaths = saveDetailImages(req.getDetail_images());
         if (!detailPaths.isEmpty()) {
-            p.setDetail_images(detailPaths);
+            sellerProductRepository.deleteImages(productId);
+            sellerProductRepository.insertImages(productId, detailPaths);
         }
-
-        productRepository.save(p);
     }
 
-    private String saveFile(MultipartFile file){
-        if (file == null || file.isEmpty()){
+    // 상세 이미지 파일들 저장 → 경로 리스트
+    private List<String> saveDetailImages(List<MultipartFile> files) {
+        List<String> paths = new ArrayList<>();
+        if (files != null) {
+            for (MultipartFile f : files) {
+                String path = saveFile(f);
+                if (path != null) paths.add(path);
+            }
+        }
+        return paths;
+    }
+
+    private String saveFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
             return null;    // 파일 없으면 null
         }
-        try{
+        try {
             String uploadDir = "uploads/products/";
             Files.createDirectories(Paths.get(uploadDir));  // 폴더 없으면 생성
 
@@ -113,7 +79,7 @@ public class SellerProductService {
             file.transferTo(target.toAbsolutePath());   // 실제 파일 저장
 
             return "/" + uploadDir + filename;  // DB에 저장할 경로
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
         }
     }

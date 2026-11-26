@@ -4,9 +4,7 @@ import com.shop.backend.product.dto.ListType;
 import com.shop.backend.product.dto.ProductDetailResponse;
 import com.shop.backend.product.dto.ProductSort;
 import com.shop.backend.product.dto.ProductSummaryResponse;
-import com.shop.backend.product.entity.Product;
 import com.shop.backend.product.service.ProductService;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,13 +29,11 @@ public class ProductController {
             @RequestParam(required = false) ProductSort sort,
             @RequestParam(defaultValue = "1") int page) {
 
-        Page<Product> result = service.getList(listType, categoryId, sort, page);
-        List<ProductSummaryResponse> products =
-                result.map(ProductSummaryResponse::new).getContent();
+        List<ProductSummaryResponse> products = service.getList(listType, categoryId, sort, page);
 
         return Map.of(
                 "code", "ok",
-                "num", result.getTotalElements(),
+                "num", products.size(),
                 "products", products
         );
     }
@@ -50,13 +46,11 @@ public class ProductController {
             @RequestParam(required = false) ProductSort sort,
             @RequestParam(defaultValue = "1") int page) {
 
-        Page<Product> result = service.search(keyword, sort, page);
-        List<ProductSummaryResponse> products =
-                result.map(ProductSummaryResponse::new).getContent();
+        List<ProductSummaryResponse> products = service.search(keyword, sort, page);
 
         return Map.of(
                 "code", "ok",
-                "num", result.getTotalElements(),
+                "num", products.size(),
                 "products", products
         );
     }
