@@ -10,7 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ProductService {
@@ -47,7 +49,9 @@ public class ProductService {
     // 상세 (U-22)
     public ProductDetailResponse getDetail(Long productId) {
         Product p = repository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+                .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다:" + productId
+                        ));
         return new ProductDetailResponse(p);
     }
 
