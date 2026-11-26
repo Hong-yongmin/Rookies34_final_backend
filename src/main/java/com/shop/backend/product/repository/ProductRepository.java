@@ -54,7 +54,7 @@ public class ProductRepository {
         return jdbcTemplate.query(sql, this::mapSummary);
     }
 
-    // 검색 (U-21) — 상품명 LIKE (SQLi 진단 포인트)
+    // 검색 (U-21) — 상품명 LIKE
     public List<ProductSummaryResponse> search(String keyword, ProductSort sort, int page) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
                 + "FROM product WHERE name LIKE '%%%s%%' %s LIMIT 20 OFFSET %d")
