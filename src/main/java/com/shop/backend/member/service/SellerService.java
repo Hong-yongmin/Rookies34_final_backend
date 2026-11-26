@@ -25,18 +25,11 @@ public class SellerService {
 
     private boolean isBlank(String v){ return v == null || v.isBlank(); }
 
-    public LoginResponse loginSeller(String login_id, String password){
-        if( sellerRepository.loginSeller(login_id, password)){
-            return LoginResponse.builder()
-                    .code("ok")
-                    .token(jwtUtil.generateToken(login_id))
-                    .build();
+    public MemberResponse checkId(String id){
+        if( sellerRepository.checkSellerId(id)){
+            return ok();
         }
-        else{
-            return LoginResponse.builder()
-                    .code("no")
-                    .build();
-        }
+        return no();
     }
 
     public MemberResponse signupSeller(SellerSignupRequest req){

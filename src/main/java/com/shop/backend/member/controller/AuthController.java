@@ -2,7 +2,7 @@ package com.shop.backend.member.controller;
 
 import com.shop.backend.member.dto.LoginRequest;
 import com.shop.backend.member.dto.LoginResponse;
-
+import com.shop.backend.member.dto.MemberResponse;
 import com.shop.backend.member.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    @GetMapping("/auth/check-id")
+    public ResponseEntity<MemberResponse> checkId(@RequestParam String id){
+        return ResponseEntity.ok(authService.checkId(id));
+    }
 
     @PostMapping("/auth/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req){

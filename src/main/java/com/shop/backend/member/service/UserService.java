@@ -19,19 +19,6 @@ public class UserService {
 
     private boolean isBlank(String v){ return v == null || v.isBlank(); }
 
-    public LoginResponse userLogin(String login_id, String password){
-        if( userRepository.loginUser(login_id, password)){
-            return LoginResponse.builder()
-                    .code("ok")
-                    .token(jwtUtil.generateToken(login_id))
-                    .build();
-        }
-        else{
-            return LoginResponse.builder()
-                    .code("no")
-                    .build();
-        }
-    }
     public MemberResponse checkId(String login_id){
         // 구매자·판매자 공용 두 테이블 모두 확인
         if (isBlank(login_id)){

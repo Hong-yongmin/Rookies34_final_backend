@@ -18,11 +18,6 @@ public class UserController {
     private final UserService userService;
     private final UserChecker userChecker;
 
-    @GetMapping("/users/check-id")
-    public ResponseEntity<MemberResponse> checkId(@RequestParam(required = false) String login_id){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.checkId(login_id));
-    }
-
     @PostMapping("/users")
     public ResponseEntity<MemberResponse> signup(@RequestBody UserSignupRequest req){
         return ResponseEntity.status(HttpStatus.OK).body(userService.signupUser(req));
