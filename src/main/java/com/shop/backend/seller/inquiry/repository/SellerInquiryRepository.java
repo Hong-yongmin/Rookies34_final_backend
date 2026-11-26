@@ -12,7 +12,7 @@ import java.util.List;
 public class SellerInquiryRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    // 문의 답변 (S-06) — 본인 상품 문의 확인 생략(수평권한 진단 포인트)
+    // 문의 답변 (S-06)
     public Boolean answer(Long inquiryId, String answer) {
         String sql = ("UPDATE product_inquiry SET answer='%s', answered_at=NOW() WHERE inquiry_id=%d")
                 .formatted(answer, inquiryId);

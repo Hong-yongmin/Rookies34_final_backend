@@ -46,7 +46,7 @@ public class SellerProductRepository {
         }
     }
 
-    // 상품 수정 (S-02) — 본인 상품 확인 생략(수평권한 진단 포인트)
+    // 상품 수정 (S-02)
     public Boolean updateProduct(Long productId, SellerProductRequest req, String thumbnailUrl) {
         int discountRate = (req.getDiscount_rate() != null) ? req.getDiscount_rate() : 0;
         String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
@@ -69,7 +69,7 @@ public class SellerProductRepository {
         jdbcTemplate.update("DELETE FROM product_image WHERE product_id=%d".formatted(productId));
     }
 
-    // 내 상품 목록 (S-11) — status/keyword 선택 필터
+    // 내 상품 목록 (S-11)
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
         String sql = ("SELECT product_id, name, price, discount_rate, stock, status, thumbnail_url, created_at "
                 + "FROM product WHERE seller_id='%s' ").formatted(sellerId);

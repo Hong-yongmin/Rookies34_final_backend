@@ -40,7 +40,7 @@ public class SellerProductService {
         }
     }
 
-    // 상품 수정 (S-02) — 본인 상품 확인 생략(수평권한 진단 포인트)
+    // 상품 수정 (S-02)
     public void update(Long productId, SellerProductRequest req, String sellerId) {
         String thumbnailUrl = saveFile(req.getThumbnail());   // 새 파일 없으면 null
         sellerProductRepository.updateProduct(productId, req, thumbnailUrl);
@@ -73,7 +73,6 @@ public class SellerProductService {
             String uploadDir = "uploads/products/";
             Files.createDirectories(Paths.get(uploadDir));  // 폴더 없으면 생성
 
-            // 확장자/타입 검증 없음
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path target = Paths.get(uploadDir, filename);
             file.transferTo(target.toAbsolutePath());   // 실제 파일 저장
