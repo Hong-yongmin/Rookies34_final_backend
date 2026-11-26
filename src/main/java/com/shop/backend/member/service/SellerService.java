@@ -37,7 +37,7 @@ public class SellerService {
         if (isBlank(req.getLogin_id()) || isBlank(req.getPassword()) || isBlank(req.getManager_name())
                 || isBlank(req.getEmail()) || isBlank(req.getPhone())
                 || isBlank(req.getBusiness_reg_no()) || isBlank(req.getBusiness_name())
-                || isBlank(req.getBusiness_cert_file()) || isBlank(req.getBusiness_cert_file_name())){
+                || req.getBusiness_cert_file() == null || req.getBusiness_cert_file().isEmpty()){
             return no();
         }
         if (!Boolean.TRUE.equals(req.getAgree_terms())){ // 판매자 약관 동의 필수
@@ -48,15 +48,14 @@ public class SellerService {
             return no();
         }
 
-        // 1. 사업자등록증 파일(base64)을 디코딩해 WAS에 저장 -> 확장자·용량·파일명 검증 없음 (업로드 취약점 포인트)
         String certPath;
         try {
-            certPath = fileUploader.save(req.getBusiness_cert_file(), req.getBusiness_cert_file_name(), CERT_DIR);
-        } catch (IOException | IllegalArgumentException e) { // 저장 실패 또는 base64 형식 오류
+            certPath = fileUploader.save(req.getBusiness_cert_file(), CERT_DIR);
+        } catch (IOException e) { // 저장 실패
             return no();
         }
 
-        // 2. 저장된 경로를 DB(cert_file_url)에 저장
+        // DB엔 저장 경로 저장
         req.setCert_file_path(certPath);
         if (sellerRepository.signupSeller(req)){
             return ok();
