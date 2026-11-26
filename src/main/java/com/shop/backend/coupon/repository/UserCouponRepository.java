@@ -20,9 +20,9 @@ public class UserCouponRepository {
                 SELECT c.*, uc.status AS user_coupon_status
                 FROM coupon c
                 JOIN user_coupon us ON us.coupon_id = c.coupon_id
-                WHERE us.user_id""" + id;
+                WHERE us.user_id = """ + id;
         if(status != null ){
-            sql += " AND status='%s'".formatted(status);
+            sql += " AND us.status='%s'".formatted(status);
         }
 
         return jdbcTemplate.query(sql,
@@ -34,7 +34,7 @@ public class UserCouponRepository {
                         rs.getInt("min_order_amount"),
                         rs.getString("valid_from"),
                         rs.getString("valid_to"),
-                        status)
+                        rs.getString("user_coupon_status"))
                 );
     }
 }
