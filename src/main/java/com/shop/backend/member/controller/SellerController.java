@@ -5,6 +5,7 @@ import com.shop.backend.global.security.SellerChecker;
 import com.shop.backend.member.dto.*;
 import com.shop.backend.member.service.SellerService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

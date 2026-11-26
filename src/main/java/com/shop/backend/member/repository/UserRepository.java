@@ -16,6 +16,14 @@ public class UserRepository {
     private final AddressRepository addressRepository;
     private final CommonFunction cf;
 
+    public Boolean loginUser(String id, String password){
+        /*
+         * 일반 사용자 로그인
+         */
+        String sql = "SELECT 1 FROM user WHERE user_id='%s' AND password='%s'".formatted(id, password);
+        return !jdbcTemplate.queryForList(sql).isEmpty();
+    }
+
     public Boolean checkUserId(String id){
         /*
          * 일반 사용자 id 중복여부 확인
@@ -49,7 +57,8 @@ public class UserRepository {
             return false;
         }
 
-        return addressRepository.addAddress(AddressCreateRequest.builder() // 주소는 별도 추가
+        return addressRepository.addAddress(AddressCreateRequest.builder()// 주소는 별도 추가
+                        .user_id(req.getLogin_id())
                         .recipient_name(req.getName())
                         .recipient_phone(req.getPhone())
                         .zipcode(req.getZipcode())

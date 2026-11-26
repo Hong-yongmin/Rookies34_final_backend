@@ -1,5 +1,6 @@
 package com.shop.backend.member.service;
 
+import com.shop.backend.global.security.JwtUtil;
 import com.shop.backend.member.dto.*;
 import com.shop.backend.member.repository.SellerRepository;
 import com.shop.backend.member.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
+    private final JwtUtil jwtUtil;
 
     private MemberResponse ok(){ return MemberResponse.builder().code("ok").build(); }
     private MemberResponse no(){ return MemberResponse.builder().code("no").build(); }

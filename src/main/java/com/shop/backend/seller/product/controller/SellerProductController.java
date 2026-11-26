@@ -33,4 +33,20 @@ public class SellerProductController {
         sellerProductService.register(req, id);
         return Map.of("code", "ok");
     }
+
+    // 상품 수정 (S-02)
+    @PutMapping("/{productId}")
+    public Map<String, Object> update(
+            @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
+            @PathVariable Long productId,
+            @ModelAttribute SellerProductRequest req) {
+
+        // 판매자 권한 확인
+        if (!sellerChecker.isSeller(id)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
+        }
+
+        sellerProductService.update(productId, req, id);
+        return Map.of("code", "ok");
+    }
 }

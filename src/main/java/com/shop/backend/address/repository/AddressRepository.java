@@ -1,20 +1,24 @@
 package com.shop.backend.address.repository;
 
+import com.shop.backend.address.dto.Address;
 import com.shop.backend.address.dto.AddressCreateRequest;
 import com.shop.backend.address.dto.AddressUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class AddressRepository {
     private final JdbcTemplate jdbcTemplate;
+
     //  배송지 추가 성공 시 true 반환
     public Boolean addAddress(AddressCreateRequest req) {
-        String sql = "INSERT INTO address (recipient_name, recipient_phone, zipcode, address, address_detail, is_default) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
-        int rows = jdbcTemplate.update(sql,
+        String sql = "INSERT INTO address (user_id, recipient_name, recipient_phone, zipcode, address, address_detail, is_default) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        int rows = jdbcTemplate.update(sql, req.getUser_id(),
                 req.getRecipient_name(), req.getRecipient_phone(), req.getZipcode(),
                 req.getAddress(), req.getAddress_detail(), Boolean.TRUE.equals(req.getIs_default()));
         return rows > 0;
@@ -36,5 +40,19 @@ public class AddressRepository {
         String sql = "DELETE FROM address WHERE address_id = ?";
         int rows = jdbcTemplate.update(sql, addressId);
         return rows > 0;
+    }
+
+    // 배송지 조회
+    public List<Address> getAddresses(String id){
+        String sql = "SELECT * FROM address WHERE user_id=?";
+        return jdbcTemplate.query(sql, (rs, i)-> Address.builder()
+                .address_id(rs.getInt("address_id"))
+                .recipient_name(rs.getString("recipient_name"))
+                .recipient_phone(rs.getString("recipient_phone"))
+                .zipcode(rs.getString("zipcode"))
+                .address(rs.getString("address"))
+                .address_detail(rs.getString("address_detail"))
+                .is_default(rs.getBoolean("is_default"))
+                .build(), id);
     }
 }

@@ -13,6 +13,14 @@ public class SellerRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
 
+    public Boolean loginSeller(String id, String password){
+        /*
+         * 판매자 로그인
+         */
+        String sql = "SELECT 1 FROM seller WHERE seller_id='%s' AND password='%s'".formatted(id, password);
+        return !jdbcTemplate.queryForList(sql).isEmpty();
+    }
+
     public Boolean checkSellerId(String id){
         /*
          * 판매자 id 중복여부 확인

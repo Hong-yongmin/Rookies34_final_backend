@@ -18,7 +18,7 @@ public class UserCouponRepository {
          */
         String sql = "SELECT * FROM coupon "
                 + "WHERE coupon_id IN (SELECT coupon_id FROM user_coupon "
-                + "WHERE user_id='" + id;
+                + "WHERE user_id='" + id + "')";
         if(status != null ){
             sql += " AND status='%s'".formatted(status);
         }

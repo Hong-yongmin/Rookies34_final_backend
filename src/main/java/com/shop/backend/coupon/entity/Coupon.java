@@ -2,6 +2,8 @@ package com.shop.backend.coupon.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name="coupon")
 public class Coupon {
@@ -23,12 +25,12 @@ public class Coupon {
     @Column(name="discount_value", nullable = false)
     private int discount_value;
 
-    @Column(name="min_order_amount", nullable = true)
+    @Column(name="min_order_amount", nullable = false)
     private int min_order_amount;
 
     @Column(name="valid_from", nullable = false)
-    private String valid_from;
+    private LocalDate valid_from;
 
     @Column(name="valid_to", nullable=false)
-    private String valid_to;
+    private LocalDate valid_to;
 }

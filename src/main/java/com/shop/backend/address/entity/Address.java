@@ -20,6 +20,9 @@ public class Address {
 //    private User user;
 
     @Column(nullable = false)
+    private String user_id;
+
+    @Column(nullable = false)
     private String recipient_name;
 
     @Column(nullable = false)
