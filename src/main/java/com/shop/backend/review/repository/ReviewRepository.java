@@ -16,4 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             Pageable pageable
     );
 
+    boolean existsByOrder_item_id(Integer order_item_id);
 }
+
+
