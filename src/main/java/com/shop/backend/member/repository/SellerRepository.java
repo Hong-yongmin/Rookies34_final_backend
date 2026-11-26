@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 public class SellerRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
+    private static Double DEFAULT_RATE = 0.05;
 
     public Boolean loginSeller(String id, String password){
         /*
@@ -51,8 +52,20 @@ public class SellerRepository {
                 + cf.q(req.getEmail()) + "," + cf.q(req.getPhone()) + "," + cf.q(req.getBusiness_reg_no()) + ","
                 + cf.q(req.getBusiness_name()) + "," + cf.q(req.getCert_file_path()) + ", 'PENDING', "
                 + cf.q(req.getBank()) + "," + cf.q(req.getAccount_no()) + "," + cf.q(req.getAccount_holder()) + ")";
-        int rows = jdbcTemplate.update(sql);
-        return rows > 0;
+        if(jdbcTemplate.update(sql) <= 0){
+            return false;
+        }
+        return setCommission(req.getLogin_id());
+    }
+
+    public Boolean setCommission(String id){
+        /*
+         * 판매자 기본 수수료율 설정 (0.05)
+         * 쿼리 실행 성공 시 true 반환
+         */
+        String sql = "INSERT INTO commission_rate (seller_id, commission_rate) VALUES (%s, %f)".formatted(id, DEFAULT_RATE);
+
+        return jdbcTemplate.update(sql) > 0;
     }
 
     public Boolean changeSellerPassword(String id, String password){

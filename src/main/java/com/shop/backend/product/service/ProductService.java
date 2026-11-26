@@ -7,6 +7,7 @@ import com.shop.backend.product.dto.ProductSummaryResponse;
 import com.shop.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

@@ -40,7 +40,6 @@ public class OrderRepository {
     public List<CheckoutAddress> getAddresses(String id){
         /*
          * 사용자의 저장된 배송지 목록 조회
-         * address 테이블에 user_id 컬럼 필요
          */
         String sql = "SELECT * FROM address WHERE user_id='%s'".formatted(id);
 
@@ -131,7 +130,7 @@ public class OrderRepository {
          */
         String sql = ("INSERT INTO orders (user_id, payment_method, product_amount, discount_amount, coupon_id, coupon_discount, "
                 + "use_points, total_amount, recipient_name, recipient_phone, zipcode, address, address_detail, delivery_request, ordered_at) "
-                + "VALUES ('%s', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s, NOW())").formatted(
+                + "VALUES ('%s', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s)").formatted(
                 id, req.getPayment_method(), product_amount, discount_amount,
                 req.getCoupon_id() == null ? "NULL" : req.getCoupon_id(), coupon_discount, use_points, total_amount,
                 req.getRecipient_name(), req.getRecipient_phone(), addr.getZipcode(), addr.getAddress(),
@@ -159,11 +158,22 @@ public class OrderRepository {
         return rows > 0;
     }
 
+    public Boolean updateSettlement(Long order_id){
+        /*
+         * 정산 추가
+         */
+        String sql = ("INSERT INTO settlement (seller_id, order_item_id, order_amount, commission_rate, commission, settlement_amount, status) "
+                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate, o.order_amount * c.commission_rate, order_amount - (o.order_amount * c.commission_rate), 'PENDING'"
+                + "FROM order_item o, commission_rate c WHERE o.order_id='%d' AND c.seller_id=o.seller_id").formatted(order_id);
+
+        return jdbcTemplate.update(sql) > 0;
+    }
+
     public Boolean decreaseStock(List<Long> cart_item_ids){
         /*
          * 주문 수량만큼 상품 재고 차감
          */
-        String sql = ("UPDATE product p, cart_item ci SET p.stock = p.stock - ci.quantity "
+        String sql = ("UPDATE product p, cart_item ci SET p.stock = IF( (p.stock - ci.quantity)<0, 0, p.stock-ci.quantity) "
                 + "WHERE p.product_id=ci.product_id AND ci.cart_item_id IN (%s)").formatted(cf.join(cart_item_ids));
         int rows = jdbcTemplate.update(sql);
         return rows > 0;
@@ -191,7 +201,7 @@ public class OrderRepository {
     public Boolean usePoints(String id, int use_points, Long order_id){
         /*
          * 적립금 사용 처리
-         * user.point 차감 후 point_history에 사용 내역(음수) 기록
+         * user.point 차감 후 point_history에 사용 내역 기록
          */
         String sql = "UPDATE user SET point = point - %d WHERE user_id='%s'".formatted(use_points, id);
         int rows = jdbcTemplate.update(sql);
