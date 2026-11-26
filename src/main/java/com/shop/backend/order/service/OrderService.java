@@ -113,7 +113,7 @@ public class OrderService {
         }
 
         int use_points = req.getUse_points() == null ? 0 : req.getUse_points();
-        if (use_points < 0 || use_points > amount - coupon_discount){ // 0 이상, 결제 금액 이하 (보유액 검증 없음 - 취약점 포인트)
+        if (use_points < 0 || use_points > amount - coupon_discount){ // 0 이상, 결제 금액 이하 (보유액 검증 없음)
             return fail();
         }
         int total_amount = amount - coupon_discount - use_points;
@@ -137,6 +137,9 @@ public class OrderService {
             return fail();
         }
         if (use_points > 0 && !orderRepository.usePoints(id, use_points, order_id)){
+            return fail();
+        }
+        if (!orderRepository.updateSettlement(order_id)){
             return fail();
         }
 
