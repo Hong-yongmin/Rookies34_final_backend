@@ -4,10 +4,8 @@ import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.UserChecker;
 import com.shop.backend.productinquiry.dto.ProductInquiryRequest;
 import com.shop.backend.productinquiry.dto.ProductInquiryResponse;
-import com.shop.backend.productinquiry.entity.ProductInquiry;
 import com.shop.backend.productinquiry.service.ProductInquiryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -45,13 +43,11 @@ public class ProductInquiryController {
             @PathVariable Long productId,
             @RequestParam(defaultValue = "1") int page) {
 
-        Page<ProductInquiry> result = service.getList(productId, page);
-        List<ProductInquiryResponse> inquiries =
-                result.map(ProductInquiryResponse::new).getContent();
+        List<ProductInquiryResponse> inquiries = service.getList(productId, page);
 
         return Map.of(
                 "code", "ok",
-                "num", result.getTotalElements(),
+                "num", inquiries.size(),
                 "inquiries", inquiries
         );
     }
