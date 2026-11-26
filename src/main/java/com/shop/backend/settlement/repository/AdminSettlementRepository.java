@@ -99,9 +99,21 @@ public class AdminSettlementRepository {
                         .build());
     }
 
-//    public Boolean confirmSettlement(Integer settlement_id, String decision){
-//        /*
-//         * 관리자 정산 확정
-//         */
-//    }
+    public Boolean confirmSettlement(Integer settlement_id, String decision){
+        /*
+         * 관리자 정산 확정
+         */
+        String sql = "UPDATE settlement SET status='%s' WHERE settlement_id='%d'".formatted(decision, settlement_id);
+        return !jdbcTemplate.queryForList(sql).isEmpty();
+    }
+
+    public Boolean confirmWithdrawal(Integer withdrawal_id, String decision){
+        /*
+         * 관리자 출금 승인
+         */
+        String sql = ("UPDATE withdrawal SET withdrawal_id='%s', processed_at=now() "
+                + "WHERE withdrawal_id='%s'").formatted(decision, withdrawal_id);
+
+        return !jdbcTemplate.queryForList(sql).isEmpty();
+    }
 }
