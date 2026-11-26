@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class Revenue {
+    private String seller_id;
     private Integer order_item_id;
     private Integer order_amount;
     private Integer commission;

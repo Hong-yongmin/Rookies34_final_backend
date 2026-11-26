@@ -27,21 +27,21 @@ public class SellerSettlementService {
                 .revenues(revenues).build();
     }
 
-    public SellerWithdrawalsResponse getWithdrawals(String id, Integer page){
+    public SellerWithdrawalResponse getWithdrawals(String id, Integer page){
         List<Withdrawal> withdrawals = sellerSettlementRepository.getWithdrawals(id, page);
-        return SellerWithdrawalsResponse.builder()
+        return SellerWithdrawalResponse.builder()
                 .code("ok")
                 .num(withdrawals.size())
                 .withdrawals(withdrawals)
                 .build();
     }
 
-    public SellerResponse applyWithdrawal(String id, Integer amount){
+    public SettlementResponse applyWithdrawal(String id, Integer amount){
         if(sellerSettlementRepository.applyWithdrawal(id, amount)){
-            return SellerResponse.builder()
+            return SettlementResponse.builder()
                     .code("ok").build();
         }
-        return SellerResponse.builder()
+        return SettlementResponse.builder()
                 .code("no").build();
     }
 }

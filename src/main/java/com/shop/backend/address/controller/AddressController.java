@@ -23,20 +23,35 @@ public class AddressController {
 
     // 배송지 추가
     @PostMapping("/me/addresses")
-    public ResponseEntity<AddressResponse> addAddress(@RequestBody AddressCreateRequest req) {
-        return ResponseEntity.ok(addressService.addAddress(req));
+    public ResponseEntity<AddressResponse> addAddress(
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @RequestBody AddressCreateRequest req) {
+        if(!userChecker.isUser(id)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
+        }
+        return ResponseEntity.ok(addressService.addAddress(req, id));
     }
 
     // 배송지 수정
     @PutMapping("/me/addresses/{addressId}")
-    public ResponseEntity<AddressResponse> updateAddress(@PathVariable Integer addressId,
-                                                         @RequestBody AddressUpdateRequest req) {
+    public ResponseEntity<AddressResponse> updateAddress(
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @PathVariable Integer addressId,
+            @RequestBody AddressUpdateRequest req) {
+        if(!userChecker.isUser(id)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
+        }
         return ResponseEntity.ok(addressService.updateAddress(addressId, req));
     }
 
     // 배송지 삭제
     @DeleteMapping("/me/addresses/{addressId}")
-    public ResponseEntity<AddressResponse> deleteAddress(@PathVariable Integer addressId) {
+    public ResponseEntity<AddressResponse> deleteAddress(
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @PathVariable Integer addressId) {
+        if(!userChecker.isUser(id)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
+        }
         return ResponseEntity.ok(addressService.deleteAddress(addressId));
     }
 
