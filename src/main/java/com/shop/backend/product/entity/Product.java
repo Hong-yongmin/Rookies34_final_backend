@@ -65,7 +65,7 @@ public class Product {
     private String status = "PENDING";   // 상태: PENDING(검증대기) → APPROVED(승인)
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private LocalDate created_at;
+    private LocalDate createdAt;
 
     public Product() {}   // JPA용 기본 생성자
 }

@@ -53,13 +53,13 @@ public class ProductService {
     // 정렬 조건 변환
     private Sort toSort(ProductSort sort) {
         if (sort == null) {
-            return Sort.by("created_at").descending();
+            return Sort.by("createdAt").descending();
         }
         return switch (sort) {
             case PRICE_ASC  -> Sort.by("price").ascending();
             case PRICE_DESC -> Sort.by("price").descending();
-            case NEW        -> Sort.by("created_at").descending();
-            case RECOMMEND  -> Sort.by("created_at").descending();
+            case NEW        -> Sort.by("createdAt").descending();
+            case RECOMMEND  -> Sort.by("createdAt").descending();
         };
     }
 }
