@@ -163,7 +163,7 @@ public class OrderRepository {
          * 정산 추가
          */
         String sql = ("INSERT INTO settlement (seller_id, order_item_id, order_amount, commission_rate, commission, settlement_amount, status) "
-                + "SELECT o.seller_id, o.order_item_id, o.order_amount, c.commission_rate, o.order_amount * c.commission_rate, order_amount - (o.order_amount * c.commission_rate), 'PENDING'"
+                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate, o.order_amount * c.commission_rate, order_amount - (o.order_amount * c.commission_rate), 'PENDING'"
                 + "FROM order_item o, commission_rate c WHERE o.order_id='%d' AND c.seller_id=o.seller_id").formatted(order_id);
 
         return jdbcTemplate.update(sql) > 0;
@@ -173,7 +173,7 @@ public class OrderRepository {
         /*
          * 주문 수량만큼 상품 재고 차감
          */
-        String sql = ("UPDATE product p, cart_item ci SET p.stock = p.stock - ci.quantity "
+        String sql = ("UPDATE product p, cart_item ci SET p.stock = IF( (p.stock - ci.quantity)<0, 0, p.stock-ci.quantity) "
                 + "WHERE p.product_id=ci.product_id AND ci.cart_item_id IN (%s)").formatted(cf.join(cart_item_ids));
         int rows = jdbcTemplate.update(sql);
         return rows > 0;

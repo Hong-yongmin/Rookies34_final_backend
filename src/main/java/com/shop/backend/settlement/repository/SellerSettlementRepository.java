@@ -19,24 +19,26 @@ public class SellerSettlementRepository {
         /*
          * 판매자 수익금 내역 조회
          */
-        String sql = ("SELECT s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
+        String sql = ("SELECT s.seller_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
                 + "FROM order_item o, settlement s "
-                + "WHERE s.seller_id='%s' AND o.seller_id='%s'").formatted(id, id);
+                + "WHERE s.seller_id = o.seller_id AND s.seller_id='%s' AND o.seller_id='%s'").formatted(id, id);
 
         if(req.getStatus() != null){
             sql += " AND s.status='%s'".formatted(req.getStatus());
         }
         if(req.getDate_from() != null){
-            sql += " AND o.ordered_at >= STR_TO_DATE('%s', '%Y-%m-%d %H:%i:%s')".formatted(req.getDate_from());
+            sql += " AND o.ordered_at >= STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s')".formatted(req.getDate_from());
         }
         if(req.getDate_to() != null){
-            sql += " AND o.ordered_at <= STR_TO_DATE('%s', '%Y-%m-%d %H:%i:%s')".formatted(req.getDate_to());
+            sql += " AND o.ordered_at <= DATE_ADD(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL 1 DAY)".formatted(req.getDate_to());
+            // 지정한 날짜까지 검색하기 위해 하루 추가
         }
         if(req.getPage() != null && req.getPage() > 0){
             sql += " LIMIT 10 OFFSET %d".formatted((req.getPage()-1)*10);
         }
         return jdbcTemplate.query(sql, (rs, i)
                 ->Revenue.builder()
+                .seller_id(rs.getString("s.seller_id"))
                 .order_item_id(rs.getInt("s.order_item_id"))
                 .order_amount(rs.getInt("s.order_amount"))
                 .commission(rs.getInt("s.commission"))
@@ -49,7 +51,7 @@ public class SellerSettlementRepository {
         /*
          * 판매자 출금 내역 조회
          */
-        String sql = ("SELECT withdrawal_id, amount, status, requested_at, processed_at "
+        String sql = ("SELECT seller_id, withdrawal_id, amount, status, requested_at, processed_at "
                 + "FROM withdrawal "
                 + "WHERE seller_id='%s'").formatted(id);
 
@@ -60,6 +62,7 @@ public class SellerSettlementRepository {
         return jdbcTemplate.query(sql,
                 (rs, i) -> Withdrawal.builder()
                         .withdrawal_id(rs.getLong("withdrawal_id"))
+                        .seller_id(rs.getString("seller_id"))
                         .amount(rs.getInt("amount"))
                         .status(rs.getString("status"))
                         .requested_at(rs.getString("requested_at"))

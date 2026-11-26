@@ -13,8 +13,8 @@ public class AddressService {
     private final AddressRepository addressRepository;
 
     // 추가
-    public AddressResponse addAddress(AddressCreateRequest req) {
-        boolean success = addressRepository.addAddress(req);
+    public AddressResponse addAddress(AddressCreateRequest req, String id) {
+        boolean success = addressRepository.addAddress(req, id);
         return AddressResponse.builder().code(success ? "ok" : "no").build();
     }
 

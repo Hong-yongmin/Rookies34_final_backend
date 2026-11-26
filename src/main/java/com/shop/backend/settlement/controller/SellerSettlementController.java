@@ -2,10 +2,10 @@ package com.shop.backend.settlement.controller;
 
 import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.SellerChecker;
-import com.shop.backend.settlement.dto.SellerResponse;
+import com.shop.backend.settlement.dto.SettlementResponse;
 import com.shop.backend.settlement.dto.SellerRevenueRequest;
 import com.shop.backend.settlement.dto.SellerRevenueResponse;
-import com.shop.backend.settlement.dto.SellerWithdrawalsResponse;
+import com.shop.backend.settlement.dto.SellerWithdrawalResponse;
 import com.shop.backend.settlement.service.SellerSettlementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,7 @@ public class SellerSettlementController {
     }
 
     @GetMapping("/withdrawals")
-    public ResponseEntity<SellerWithdrawalsResponse> getWithdrawals(
+    public ResponseEntity<SellerWithdrawalResponse> getWithdrawals(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @RequestParam Integer page
     ){
@@ -44,7 +44,7 @@ public class SellerSettlementController {
     }
 
     @PostMapping("/withdrawals")
-    public ResponseEntity<SellerResponse> applyWithdrawals(
+    public ResponseEntity<SettlementResponse> applyWithdrawals(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @RequestBody Integer amount
     ){
