@@ -15,20 +15,6 @@ public class AdminService {
     private final AdminRepository adminRepository;
     private final JwtUtil jwtUtil;
 
-    public LoginResponse loginAdmin(String login_id, String password){
-        if( adminRepository.loginAdmin(login_id, password)){
-            return LoginResponse.builder()
-                    .code("ok")
-                    .token(jwtUtil.generateToken(login_id))
-                    .build();
-        }
-        else{
-            return LoginResponse.builder()
-                    .code("no")
-                    .build();
-        }
-    }
-
     public AdminMemberListResponse getMembers(String keyword, String role, String status, Integer page){
         List<AdminMemberInfo> users = new ArrayList<>();
         if (role == null || role.equals("BUYER")){ // role이 없으면 구매자·판매자 모두 조회
