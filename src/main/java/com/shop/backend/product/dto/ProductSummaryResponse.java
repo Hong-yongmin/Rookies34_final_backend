@@ -3,7 +3,7 @@ package com.shop.backend.product.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-// 목록 / 검색 응답용 (요약) — JdbcTemplate RowMapper로 매핑
+// 목록 / 검색 응답용 (요약)
 @Getter
 @Builder
 public class ProductSummaryResponse {

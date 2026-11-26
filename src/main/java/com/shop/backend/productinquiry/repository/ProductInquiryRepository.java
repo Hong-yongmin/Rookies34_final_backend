@@ -1,5 +1,7 @@
 package com.shop.backend.productinquiry.repository;
 
+import com.shop.backend.productinquiry.dto.MyInquiryDetailResponse;
+import com.shop.backend.productinquiry.dto.MyInquiryResponse;
 import com.shop.backend.productinquiry.dto.ProductInquiryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,7 +14,7 @@ import java.util.List;
 public class ProductInquiryRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    // 문의 작성 (U-25) — title/content 정화 없이 저장 (저장형 XSS 진단 포인트)
+    // 문의 작성 (U-25)
     public void insert(Long productId, String writer, String title, String content, boolean isSecret) {
         String sql = ("INSERT INTO product_inquiry (product_id, user_id, title, content, is_secret) "
                 + "VALUES (%d, '%s', '%s', '%s', %d)")
@@ -20,7 +22,7 @@ public class ProductInquiryRepository {
         jdbcTemplate.update(sql);
     }
 
-    // 특정 상품의 문의 목록 (U-26) — 마스킹/비밀글 보호 없음(진단 포인트)
+    // 특정 상품의 문의 목록 (U-26)
     public List<ProductInquiryResponse> getByProduct(Long productId, int page) {
         String sql = ("SELECT inquiry_id, title, user_id, created_at, is_secret, content, answer "
                 + "FROM product_inquiry WHERE product_id=%d ORDER BY created_at DESC LIMIT 10 OFFSET %d")
@@ -37,5 +39,51 @@ public class ProductInquiryRepository {
                         .content(rs.getString("content"))
                         .answer(rs.getString("answer"))
                         .build());
+    }
+
+    // 내 문의 내역 (U-53) — 내가 쓴 문의 + 상품명 JOIN
+    public List<MyInquiryResponse> getMyInquiries(String userId, int page) {
+        String sql = ("SELECT i.inquiry_id, i.product_id, p.name AS product_name, "
+                + "i.title, i.is_secret, i.answer, i.created_at "
+                + "FROM product_inquiry i, product p "
+                + "WHERE i.product_id = p.product_id AND i.user_id = '%s' "
+                + "ORDER BY i.created_at DESC LIMIT 10 OFFSET %d")
+                .formatted(userId, (page - 1) * 10);
+
+        return jdbcTemplate.query(sql, (rs, i) ->
+                MyInquiryResponse.builder()
+                        .inquiry_id(rs.getLong("inquiry_id"))
+                        .product_id(rs.getLong("product_id"))
+                        .product_name(rs.getString("product_name"))
+                        .title(rs.getString("title"))
+                        .is_secret(rs.getBoolean("is_secret"))
+                        .is_answered(rs.getString("answer") != null)
+                        .created_at(rs.getString("created_at"))
+                        .build());
+    }
+
+    // 내 문의 상세 (목록에서 클릭)
+    public MyInquiryDetailResponse getMyInquiryDetail(Long inquiryId) {
+        String sql = ("SELECT i.inquiry_id, i.product_id, p.name AS product_name, "
+                + "i.title, i.content, i.is_secret, i.answer, i.answered_at, i.created_at "
+                + "FROM product_inquiry i, product p "
+                + "WHERE i.product_id = p.product_id AND i.inquiry_id = %d")   // ⚠️ user_id 필터 없음
+                .formatted(inquiryId);
+
+        List<MyInquiryDetailResponse> list = jdbcTemplate.query(sql, (rs, i) ->
+                MyInquiryDetailResponse.builder()
+                        .inquiry_id(rs.getLong("inquiry_id"))
+                        .product_id(rs.getLong("product_id"))
+                        .product_name(rs.getString("product_name"))
+                        .title(rs.getString("title"))
+                        .content(rs.getString("content"))
+                        .is_secret(rs.getBoolean("is_secret"))
+                        .is_answered(rs.getString("answer") != null)
+                        .answer(rs.getString("answer"))
+                        .answered_at(rs.getString("answered_at"))
+                        .created_at(rs.getString("created_at"))
+                        .build());
+
+        return list.isEmpty() ? null : list.get(0);
     }
 }
