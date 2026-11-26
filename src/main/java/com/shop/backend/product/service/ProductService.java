@@ -3,6 +3,7 @@ package com.shop.backend.product.service;
 import com.shop.backend.product.dto.ListType;
 import com.shop.backend.product.dto.ProductDetailResponse;
 import com.shop.backend.product.dto.ProductSort;
+import com.shop.backend.product.entity.Curation;
 import com.shop.backend.product.entity.Product;
 import com.shop.backend.product.repository.ProductRepository;
 import org.springframework.data.domain.Page;
@@ -30,10 +31,10 @@ public class ProductService {
                 }
                 yield repository.findByCategory(categoryId, pageable);
             }
-            case BEST    -> repository.findByBestTrue(pageable);
-            case SALE    -> repository.findBySaleTrue(pageable);
-            case NEW     -> repository.findNewArrivals(pageable);
-            case BENEFIT -> repository.findByBenefitTrue(pageable);
+            case BEST    -> repository.findByCuration(Curation.BEST, pageable);
+            case SALE    -> repository.findByCuration(Curation.SALE, pageable);
+            case NEW     -> repository.findByCuration(Curation.NEW_ARRIVAL, pageable);  // NEW → NEW_ARRIVAL
+            case BENEFIT -> repository.findByCuration(Curation.BENEFIT, pageable);
         };
     }
 
