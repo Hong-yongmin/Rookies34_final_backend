@@ -3,68 +3,47 @@ package com.shop.backend.product.service;
 import com.shop.backend.product.dto.ListType;
 import com.shop.backend.product.dto.ProductDetailResponse;
 import com.shop.backend.product.dto.ProductSort;
-import com.shop.backend.product.entity.Curation;
-import com.shop.backend.product.entity.Product;
+import com.shop.backend.product.dto.ProductSummaryResponse;
 import com.shop.backend.product.repository.ProductRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository repository;
 
-    public ProductService(ProductRepository repository) {
-        this.repository = repository;
-    }
-
     // 목록 조회 (U-20)
-    public Page<Product> getList(ListType listType, Long categoryId, ProductSort sort, int page) {
-        Pageable pageable = PageRequest.of(page - 1, 20, toSort(sort));  // page는 1부터
+    public List<ProductSummaryResponse> getList(ListType listType, Long categoryId, ProductSort sort, int page) {
         return switch (listType) {
             case CATEGORY -> {
                 if (categoryId == null) {
                     throw new IllegalArgumentException("category_id는 CATEGORY 조회 시 필수입니다.");
                 }
-                yield repository.findByCategory(categoryId, pageable);
+                yield repository.getListByCategory(categoryId, sort, page);
             }
-            case BEST    -> repository.findByCuration(Curation.BEST, pageable);
-            case SALE    -> repository.findByCuration(Curation.SALE, pageable);
-            case NEW     -> repository.findByCuration(Curation.NEW_ARRIVAL, pageable);  // NEW → NEW_ARRIVAL
-            case BENEFIT -> repository.findByCuration(Curation.BENEFIT, pageable);
+            case BEST    -> repository.getListByCuration("BEST", sort, page);
+            case SALE    -> repository.getListByCuration("SALE", sort, page);
+            case NEW     -> repository.getListByCuration("NEW_ARRIVAL", sort, page);  // NEW → NEW_ARRIVAL
+            case BENEFIT -> repository.getListByCuration("BENEFIT", sort, page);
         };
     }
 
     // 검색 (U-21)
-    public Page<Product> search(String keyword, ProductSort sort, int page) {
-        Pageable pageable = PageRequest.of(page - 1, 20, toSort(sort));
-        return repository.findByNameContaining(keyword, pageable);
+    public List<ProductSummaryResponse> search(String keyword, ProductSort sort, int page) {
+        return repository.search(keyword, sort, page);
     }
 
     // 상세 (U-22)
     public ProductDetailResponse getDetail(Long productId) {
-        Product p = repository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다:" + productId
-                        ));
-        return new ProductDetailResponse(p);
-    }
-
-    // 정렬 조건 변환
-    private Sort toSort(ProductSort sort) {
-        if (sort == null) {
-            return Sort.by("createdAt").descending();
+        ProductDetailResponse detail = repository.getDetail(productId);
+        if (detail == null) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId);
         }
-        return switch (sort) {
-            case PRICE_ASC  -> Sort.by("price").ascending();
-            case PRICE_DESC -> Sort.by("price").descending();
-            case NEW        -> Sort.by("createdAt").descending();
-            case RECOMMEND  -> Sort.by("createdAt").descending();
-        };
+        detail.setDetail_images(repository.getDetailImages(productId));   // 상세 이미지 별도 조회
+        return detail;
     }
 }

@@ -1,4 +1,4 @@
-package com.shop.backend.product.entity;
+package com.shop.backend.product.dto;
 
 public enum PackagingType {
     ROOM,    // 상온
