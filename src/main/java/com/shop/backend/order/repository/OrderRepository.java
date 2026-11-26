@@ -130,7 +130,7 @@ public class OrderRepository {
          */
         String sql = ("INSERT INTO orders (user_id, payment_method, product_amount, discount_amount, coupon_id, coupon_discount, "
                 + "use_points, total_amount, recipient_name, recipient_phone, zipcode, address, address_detail, delivery_request, ordered_at) "
-                + "VALUES ('%s', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s)").formatted(
+                + "VALUES ('%s', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s, NOW())").formatted(   // ordered_at = 주문 시각
                 id, req.getPayment_method(), product_amount, discount_amount,
                 req.getCoupon_id() == null ? "NULL" : req.getCoupon_id(), coupon_discount, use_points, total_amount,
                 req.getRecipient_name(), req.getRecipient_phone(), addr.getZipcode(), addr.getAddress(),

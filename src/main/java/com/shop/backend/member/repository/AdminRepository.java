@@ -72,7 +72,7 @@ public class AdminRepository {
     public Boolean changeUserStatus(String id, UserStatusRequest req){
         /*
          * 사용자 상태 변경
-         * memo가 있으면 reason 테이블에 사유 저장
+         * memo가 있으면 user_reason 테이블에 사유 저장
          */
         String status = req.getStatus();
         if (!"ACTIVE".equals(status) && !"SUSPENDED".equals(status)){
@@ -97,7 +97,7 @@ public class AdminRepository {
     public Boolean changeSellerStatus(String id, SellerApprovalRequest req){
         /*
          * 판매자 입점 승인, 거절 등 상태 변경
-         * REJECT인 경우 reject_reason 필수, reason 테이블에 사유 저장
+         * REJECT인 경우 reject_reason 필수, seller_reason 테이블에 사유 저장
          * 쿼리 실행 성공 시 true 반환
          */
         String decision = req.getDecision();
