@@ -68,8 +68,11 @@ public class SellerProductService {
         p.setOrigin(req.getOrigin());
         p.setDescription(req.getDescription());
 
-        // 썸네일 저장
-        p.setThumbnail(saveFile(req.getThumbnail()));
+        // 새로운 썸네일이 있을 때만 저장
+        String newThumbnailUrl = saveFile(req.getThumbnail());
+        if (newThumbnailUrl != null) {
+            p.setThumbnail(newThumbnailUrl);
+        }
 
         // 상세 이미지들 저장
         List<String> detailPaths = new ArrayList<>();
@@ -79,7 +82,9 @@ public class SellerProductService {
                 if (path != null) detailPaths.add(path);
             }
         }
-        p.setDetail_images(detailPaths);
+        if (!detailPaths.isEmpty()) {
+            p.setDetail_images(detailPaths);
+        }
 
         productRepository.save(p);
     }
