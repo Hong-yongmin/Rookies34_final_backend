@@ -161,10 +161,15 @@ public class OrderRepository {
     public Boolean updateSettlement(Long order_id){
         /*
          * 정산 추가
+         * 주문 금액 = 판매가 × 수량
+         * commission_rate 테이블은 0~1 비율, settlement.commission_rate는 0~100(%) → ×100 해서 저장
+         * 수수료는 원 단위 절사, 정산액 = 주문 금액 - 수수료 (settlement CHECK 조건과 일치)
          */
         String sql = ("INSERT INTO settlement (seller_id, order_item_id, order_amount, commission_rate, commission, settlement_amount, status) "
-                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate, o.order_amount * c.commission_rate, order_amount - (o.order_amount * c.commission_rate), 'PENDING'"
-                + "FROM order_item o, commission_rate c WHERE o.order_id='%d' AND c.seller_id=o.seller_id").formatted(order_id);
+                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate * 100, "
+                + "FLOOR(o.price * o.quantity * c.commission_rate), "
+                + "o.price * o.quantity - FLOOR(o.price * o.quantity * c.commission_rate), 'PENDING' "
+                + "FROM order_item o, commission_rate c WHERE o.order_id=%d AND c.seller_id=o.seller_id").formatted(order_id);
 
         return jdbcTemplate.update(sql) > 0;
     }
