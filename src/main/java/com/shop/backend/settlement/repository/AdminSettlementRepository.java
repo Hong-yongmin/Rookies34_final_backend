@@ -1,9 +1,6 @@
 package com.shop.backend.settlement.repository;
 
-import com.shop.backend.settlement.dto.AdminRevenueRequest;
-import com.shop.backend.settlement.dto.AdminWithdrawalRequest;
-import com.shop.backend.settlement.dto.Revenue;
-import com.shop.backend.settlement.dto.Withdrawal;
+import com.shop.backend.settlement.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -30,7 +27,7 @@ public class AdminSettlementRepository {
         /*
          * 관리자 수익 조회
          */
-        String sql = "SELECT s.seller_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
+        String sql = "SELECT s.seller_id, s.settlement_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
                 + "FROM order_item o, settlement s"
                 + "WHERE o.seller_id = s.seller_id";
 
@@ -54,6 +51,7 @@ public class AdminSettlementRepository {
         return jdbcTemplate.query(sql,
                 (rs, i) -> Revenue.builder()
                         .seller_id(rs.getString("s.seller_id"))
+                        .settlement_id(rs.getInt("s.settlement_id"))
                         .order_item_id(rs.getInt("s.order_item_id"))
                         .order_amount(rs.getInt("s.order_amount"))
                         .commission(rs.getInt("s.commission"))
@@ -101,5 +99,9 @@ public class AdminSettlementRepository {
                         .build());
     }
 
-
+//    public Boolean confirmSettlement(Integer settlement_id, String decision){
+//        /*
+//         * 관리자 정산 확정
+//         */
+//    }
 }

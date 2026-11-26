@@ -90,7 +90,7 @@ public class ReviewService {
     // 중복 후기 검증
     public void validateDuplicateReview(Integer orderItemId) {
 
-        if (reviewRepository.existsByOrder_item_id(orderItemId)) {
+        if (reviewRepository.existsByOrderItemId(orderItemId)) {
             throw new IllegalArgumentException(
                     "이미 리뷰를 작성한 상품입니다."
             );
