@@ -294,4 +294,15 @@ public class OrderRepository {
                         .price(rs.getInt("price"))
                         .status(rs.getString("status")).build());
     }
+    public Boolean isOrderOwnedByUser(String userId, Integer orderId) {
+        String sql = "SELECT * FROM orders WHERE order_id=%d AND user_id='%s'"
+                .formatted(orderId, userId);
+
+        List<Integer> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getInt("order_id")
+        );
+
+        return !result.isEmpty();
+    }
 }
