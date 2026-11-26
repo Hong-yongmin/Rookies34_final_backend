@@ -43,7 +43,7 @@ public class SellerController {
         return ResponseEntity.status(HttpStatus.OK).body(sellerService.changeSellerInfo(id, req));
     }
 
-    @PutMapping("/seller/password") // API 명세에 없음 (판매자 비밀번호 변경)
+    @PutMapping("/seller/password") //(판매자 비밀번호 변경)
     public ResponseEntity<MemberResponse> changeMyPassword(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @RequestBody PasswordChangeRequest req){

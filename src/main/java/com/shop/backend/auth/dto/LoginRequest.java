@@ -1,4 +1,4 @@
-package com.shop.backend.member.dto;
+package com.shop.backend.auth.dto;
 
 import lombok.Getter;
 import lombok.Setter;
