@@ -19,10 +19,10 @@ public class UserCouponRepository {
         String sql = """
                 SELECT c.*, uc.status AS user_coupon_status
                 FROM coupon c
-                JOIN user_coupon us ON us.coupon_id = c.coupon_id
-                WHERE us.user_id = """ + id;
+                JOIN user_coupon uc ON uc.coupon_id = c.coupon_id
+                WHERE uc.user_id = """ + id;
         if(status != null ){
-            sql += " AND us.status='%s'".formatted(status);
+            sql += " AND uc.status='%s'".formatted(status);
         }
 
         return jdbcTemplate.query(sql,
