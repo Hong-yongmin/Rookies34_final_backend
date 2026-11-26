@@ -48,7 +48,7 @@ public class PostService {
                 pageable
         );
 
-        long totalCount = postRepository.countByBoard_type(
+        long totalCount = postRepository.countByBoardType(
                 BoardType.NOTICE
         );
 

@@ -25,5 +25,7 @@ public interface InquiryRepository
     );
 
     // 특정 사용자의 전체 문의 개수
-    long countByUser_id(String userId);
+    // 메서드 이름 방식은 '_'를 연관 필드 구분자로 해석하므로 @Query로 작성
+    @Query("SELECT COUNT(i) FROM Inquiry i WHERE i.user_id = :userId")
+    long countByUserId(@Param("userId") String userId);
 }

@@ -131,7 +131,7 @@ public class InquiryService {
 
         // 전체 문의 개수 조회
         long totalCount =
-                inquiryRepository.countByUser_id(userId);
+                inquiryRepository.countByUserId(userId);
 
         // 목록 DTO 변환
         List<InquiryListItemDto> inquiryList = inquiries.stream()
