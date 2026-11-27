@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +67,11 @@ public class SellerService {
     }
 
     public SellerInfoResponse getSellerInfo(String id){
+        SellerInfo info = sellerRepository.getSellerInfo(id);
+        // DB의 파일 경로로 다운로드 API 주소 생성 (경로에 '/' 등이 있으므로 URL 인코딩)
+        info.setCert_download_url("/api/seller/cert-file?path="
+                + URLEncoder.encode(info.getCert_file_url(), StandardCharsets.UTF_8));
+
         return SellerInfoResponse.builder()
                 .code("ok")
                 .sellerInfo(sellerRepository.getSellerInfo(id))

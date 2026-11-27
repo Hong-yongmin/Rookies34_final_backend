@@ -19,4 +19,5 @@ public class SellerInfo {
     private final String account_holder;
     private final String status;
     private final String created_at;
+    private String cert_download_url;   // 사업자등록증 다운로드 API 경로 (서비스에서 설정)
 }

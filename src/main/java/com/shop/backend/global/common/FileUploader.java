@@ -20,23 +20,25 @@ public class FileUploader {
         /*
          * multipart로 받은 파일을 {uploadDir}/{subDir}/{원본 파일명} 에 저장
          * 파일명은 클라이언트가 보낸 원본 파일명 그대로 사용
+         * 업로드 루트 기준 상대 경로({subDir}/{원본 파일명}) 반환 -> DB에 저장, 다운로드 시 그대로 사용
          */
         String dirPath = uploadDir + "/" + subDir;
         new File(dirPath).mkdirs();
 
-        String path = dirPath + "/" + file.getOriginalFilename();
+        String relativePath = subDir + "/" + file.getOriginalFilename();
+        String path = uploadDir + "/" + relativePath;
         try (InputStream in = file.getInputStream();
              FileOutputStream fos = new FileOutputStream(path)) {
             in.transferTo(fos);
         }
-        return path;
+        return relativePath;
     }
 
     public void delete(String path) {
         /*
-         * 저장된 파일 삭제
+         * 저장된 파일 삭제, path는 save()가 반환한 상대 경로
          */
         if (path == null) return;
-        new File(path).delete();
+        new File(uploadDir + "/" + path).delete();
     }
 }
