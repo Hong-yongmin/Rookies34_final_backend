@@ -1,5 +1,6 @@
 package com.shop.backend.product.repository;
 
+import com.shop.backend.global.common.CommonFunction;
 import com.shop.backend.product.dto.AdminProductDetailResponse;
 import com.shop.backend.product.dto.AdminProductResponse;
 import com.shop.backend.product.dto.ProductDetailResponse;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final CommonFunction cf;
 
     // 정렬(ProductSort) → ORDER BY 절
     private String orderBy(ProductSort sort) {
@@ -141,6 +143,13 @@ public class ProductRepository {
                         .status(rs.getString("status"))
                         .created_at(rs.getString("created_at"))
                         .build());
+    }
+
+    // 큐레이션 지정/해제 (A-07) — product_ids 여러 개 한번에. curation null이면 해제(NULL)
+    public int updateCuration(List<Long> productIds, String curation) {
+        String sql = "UPDATE product SET curation=%s WHERE product_id IN (%s)"
+                .formatted(cf.q(curation), cf.join(productIds));   // cf.q: 'BEST' 또는 NULL(해제)
+        return jdbcTemplate.update(sql);
     }
 
     // 상태 변경 (A-05 승인/반려/철회) — 영향받은 행 수 반환 (0이면 해당 상품 없음)
