@@ -1,7 +1,7 @@
 
 package com.shop.backend.support.post.controller;
 
-import com.shop.backend.support.post.dto.PostResponseDto;
+import com.shop.backend.support.post.dto.NoticeDetailResponseDto;
 import com.shop.backend.support.post.dto.NoticeListResponseDto;
 import com.shop.backend.support.post.dto.FaqListResponseDto;
 import com.shop.backend.support.post.entity.FaqCategory;
@@ -27,8 +27,8 @@ public class PostController {
 
     // 공지사항 상세 조회
     @GetMapping("/api/notices/{noticeId}")
-    public PostResponseDto getNoticeDetail(
-            @PathVariable Integer noticeId
+    public NoticeDetailResponseDto getNoticeDetail(
+            @PathVariable("noticeId") Integer noticeId
     ) {
         return postService.getNoticeDetail(noticeId);
     }
