@@ -1,6 +1,7 @@
 package com.shop.backend.global.common;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -51,6 +52,10 @@ public class FileDownloader {
                 if (local.getStatusCode().is2xxSuccessful()) {
                     return local;
                 }
+                if ("sample.png".equals(filename)) {
+                    Resource sample = new ClassPathResource("seller-certificates/sample.png");
+                    return attachment(sample, filename, sample.contentLength());
+                }
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .cacheControl(CacheControl.noStore())
                         .location(URI.create(SAMPLE_CERT_PREFIX + UriUtils.encodePathSegment(filename, StandardCharsets.UTF_8)))
@@ -63,7 +68,7 @@ public class FileDownloader {
             if (absolutePath.isAbsolute() && certificateDir.toAbsolutePath().normalize().equals(absolutePath.getParent())) {
                 return downloadFile(certificateDir, absolutePath.getFileName().toString());
             }
-        } catch (InvalidPathException e) {
+        } catch (IOException | InvalidPathException e) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.notFound().build();
@@ -84,15 +89,19 @@ public class FileDownloader {
             if (!file.startsWith(root) || !Files.isRegularFile(file)) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok()
-                    .cacheControl(CacheControl.noStore())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .contentLength(Files.size(file))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
-                            .filename(filename, StandardCharsets.UTF_8).build().toString())
-                    .body(new FileSystemResource(file));
+            return attachment(new FileSystemResource(file), filename, Files.size(file));
         } catch (IOException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private ResponseEntity<Resource> attachment(Resource resource, String filename, long length) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(length)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(filename, StandardCharsets.UTF_8).build().toString())
+                .body(resource);
     }
 }
