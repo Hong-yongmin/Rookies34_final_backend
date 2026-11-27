@@ -14,6 +14,9 @@ public class CartResponse {
     private String address;
     private String address_detail;
     private List<item> items;
+    private Integer total_price;
+    private Integer total_discount;
+    private Integer final_price;
 
     @Getter
     @Setter
@@ -24,6 +27,8 @@ public class CartResponse {
         private Integer quantity;
         private Integer price;
         private Integer discount_rate;
+        private Integer sale_price;
         private String thumbnail;
     }
+
 }

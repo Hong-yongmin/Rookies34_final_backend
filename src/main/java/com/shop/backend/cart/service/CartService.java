@@ -13,7 +13,9 @@ public class CartService {
     private final CartRepository cartRepository;
 
     public Boolean addItem(String userId, CartItemsRequest req) {
-        List<Integer> cartId = cartRepository.findCartId(userId);
+        if (req.getProduct_id() == null || !cartRepositroy.existsProduct(req.getProduct_id())) return false;
+
+        List<Integer> cartId = cartRepositroy.findCartId(userId);
         if (cartId.isEmpty()) {
             cartRepository.createCart(userId);
             cartId = cartRepository.findCartId(userId);
@@ -27,9 +29,21 @@ public class CartService {
         res.setNum(res.getItems().size());
         res.setCode("ok");
 
-        List<Map<String, Object>> shipping = cartRepository.findShipping(userId);
-        if (!shipping.isEmpty()) {
-            Map<String, Object> s = shipping.get(0);
+        int totalPrice = 0;
+        int totalDiscount = 0;
+        for (CartResponse.item i : res.getItems()) {
+            int salePrice = i.getPrice() * (100 - i.getDiscount_rate()) / 100;
+            i.setSale_price(salePrice);
+            totalPrice += i.getPrice() * i.getQuantity();
+            totalDiscount += (i.getPrice() - salePrice) * i.getQuantity();
+        }
+        res.setTotal_price(totalPrice);
+        res.setTotal_discount(totalDiscount);
+        res.setFinal_price(totalPrice - totalDiscount);
+
+        List<Map<String, Object>> selected = cartRepositroy.findSelectedAddress(userId);
+        if (!selected.isEmpty()) {
+            Map<String, Object> s = selected.get(0);
             res.setAddress_id((Integer) s.get("address_id"));
             res.setZipcode((String) s.get("zipcode"));
             res.setAddress((String) s.get("address"));
@@ -47,7 +61,7 @@ public class CartService {
     }
 
     public Boolean updateShipping(String userId, CartShippingAddressRequest req) {
-        if (cartRepository.findCartId(userId).isEmpty()) cartRepository.createCart(userId);
-        return cartRepository.updateShipping(userId, req.getAddress_id());
+        if (cartRepositroy.findCartId(userId).isEmpty()) cartRepositroy.createCart(userId);
+        return cartRepositroy.updateSelectedAddress(userId, req.getAddress_id());
     }
 }

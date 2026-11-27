@@ -23,14 +23,22 @@ public class CartRepository {
         jdbcTemplate.update("INSERT INTO cart (user_id) VALUES (" + cf.q(userId) + ")");
     }
 
+    public Boolean existsProduct(Integer productId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM product WHERE product_id=" + productId, Integer.class) > 0;
+    }
+
     public Boolean addItem(Integer cartId, Integer productId, Integer quantity) {
         return jdbcTemplate.update("INSERT INTO cart_item (cart_id, product_id, quantity) VALUES ("
                 + cartId + "," + productId + "," + quantity + ")") > 0;
     }
 
     public List<CartResponse.item> findItems(String userId) {
-        return jdbcTemplate.query("SELECT ci.cart_item_id, ci.product_id, ci.quantity"
-                        + " FROM cart c JOIN cart_item ci ON c.cart_id = ci.cart_id"
+        return jdbcTemplate.query("SELECT ci.cart_item_id, ci.product_id, ci.quantity,"
+                        + " p.name, p.price, p.discount_rate, p.thumbnail"
+                        + " FROM cart c"
+                        + " JOIN cart_item ci ON c.cart_id = ci.cart_id"
+                        + " JOIN product p ON ci.product_id = p.product_id"
                         + " WHERE c.user_id=" + cf.q(userId),
                 new BeanPropertyRowMapper<>(CartResponse.item.class));
     }
@@ -45,11 +53,11 @@ public class CartRepository {
         return rows > 0;
     }
 
-    public Boolean updateShipping(String userId, Integer addressId) {
+    public Boolean updateSelectedAddress(String userId, Integer addressId) {
         return jdbcTemplate.update("UPDATE cart SET address_id=" + addressId + " WHERE user_id=" + cf.q(userId)) > 0;
     }
 
-    public List<Map<String, Object>> findShipping(String userId) {
+    public List<Map<String, Object>> findSelectedAddress(String userId) {
         return jdbcTemplate.queryForList("SELECT a.address_id, a.zipcode, a.address, a.address_detail"
                 + " FROM cart c JOIN address a ON c.address_id = a.address_id"
                 + " WHERE c.user_id=" + cf.q(userId));
