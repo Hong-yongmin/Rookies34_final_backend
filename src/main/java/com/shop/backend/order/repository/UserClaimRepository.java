@@ -84,7 +84,7 @@ public class UserClaimRepository {
         return jdbcTemplate.query(sql,
                 (rs, i)->Claim.builder()
                         .claim_id(rs.getInt("claim_id"))
-                        .order_id(rs.getInt("order_id"))
+                        .order_item_id(rs.getInt("order_item_id"))
                         .request_type(rs.getString("request_type"))
                         .reason_type(rs.getString("reason_type"))
                         .status(rs.getString("status"))
