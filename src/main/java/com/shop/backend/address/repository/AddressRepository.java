@@ -1,58 +1,48 @@
 package com.shop.backend.address.repository;
 
-import com.shop.backend.address.dto.Address;
-import com.shop.backend.address.dto.AddressCreateRequest;
-import com.shop.backend.address.dto.AddressUpdateRequest;
+import com.shop.backend.address.dto.*;
+import com.shop.backend.global.common.CommonFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
 public class AddressRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final CommonFunction cf;
 
-    //  배송지 추가 성공 시 true 반환
-    public Boolean addAddress(AddressCreateRequest req, String id) {
-        String sql = "INSERT INTO address (user_id, recipient_name, recipient_phone, zipcode, address, address_detail, is_default) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        int rows = jdbcTemplate.update(sql, id,
-                req.getRecipient_name(), req.getRecipient_phone(), req.getZipcode(),
-                req.getAddress(), req.getAddress_detail(), Boolean.TRUE.equals(req.getIs_default()));
-        return rows > 0;
+    public List<Map<String, Object>> findMyAddresses(String loginId) {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM address WHERE user_id=" + cf.q(loginId) + " ORDER BY is_default DESC");
     }
 
-    //  배송지 수정 성공 시 true 반환 (해당 배송지가 없으면 false)
-    public Boolean updateAddress(String userId, Integer addressId, AddressUpdateRequest req) {
-        String sql = "UPDATE address SET recipient_name = ?, recipient_phone = ?, zipcode = ?, "
-                + "address = ?, address_detail = ?, is_default = ? WHERE address_id = ? AND user_id = ?";
-        int rows = jdbcTemplate.update(sql,
-                req.getRecipient_name(), req.getRecipient_phone(), req.getZipcode(),
-                req.getAddress(), req.getAddress_detail(), Boolean.TRUE.equals(req.getIs_default()),
-                addressId, userId);
-        return rows > 0;
+    public Boolean addAddress(String loginId, AddressCreateRequest req) {
+        String sql = "INSERT INTO address (user_id, recipient_name, recipient_phone, zipcode, address, address_detail, is_default) VALUES ("
+                + cf.q(loginId) + "," + cf.q(req.getRecipient_name()) + "," + cf.q(req.getRecipient_phone()) + ","
+                + cf.q(req.getZipcode()) + "," + cf.q(req.getAddress()) + "," + cf.q(req.getAddress_detail()) + ","
+                + Boolean.TRUE.equals(req.getIs_default()) + ")";
+        return jdbcTemplate.update(sql) > 0;
     }
 
-    //  배송지 삭제 성공 시 true 반환 (해당 배송지가 없으면 false)
-    public Boolean deleteAddress(String userId, Integer addressId) {
-        String sql = "DELETE FROM address WHERE address_id = ? AND user_id = ?";
-        int rows = jdbcTemplate.update(sql, addressId, userId);
-        return rows > 0;
+    public Boolean updateAddress(Integer addressId, AddressUpdateRequest req) {
+        String sql = "UPDATE address SET recipient_name=" + cf.q(req.getRecipient_name())
+                + ", recipient_phone=" + cf.q(req.getRecipient_phone())
+                + ", zipcode=" + cf.q(req.getZipcode())
+                + ", address=" + cf.q(req.getAddress())
+                + ", address_detail=" + cf.q(req.getAddress_detail())
+                + (Boolean.TRUE.equals(req.getIs_default()) ? ", is_default=true" : "")
+                + " WHERE address_id=" + addressId;
+        return jdbcTemplate.update(sql) > 0;
     }
 
-    // 배송지 조회
-    public List<Address> getAddresses(String id){
-        String sql = "SELECT * FROM address WHERE user_id=?";
-        return jdbcTemplate.query(sql, (rs, i)-> Address.builder()
-                .address_id(rs.getInt("address_id"))
-                .recipient_name(rs.getString("recipient_name"))
-                .recipient_phone(rs.getString("recipient_phone"))
-                .zipcode(rs.getString("zipcode"))
-                .address(rs.getString("address"))
-                .address_detail(rs.getString("address_detail"))
-                .is_default(rs.getBoolean("is_default"))
-                .build(), id);
+    public Boolean deleteAddress(Integer addressId) {
+        return jdbcTemplate.update("DELETE FROM address WHERE address_id=" + addressId) > 0;
+    }
+
+    public void clearDefault(String loginId) {
+        jdbcTemplate.update("UPDATE address SET is_default=false WHERE user_id=" + cf.q(loginId));
     }
 }
