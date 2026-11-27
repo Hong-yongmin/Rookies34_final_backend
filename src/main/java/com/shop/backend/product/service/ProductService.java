@@ -29,9 +29,30 @@ public class ProductService {
         };
     }
 
+    // 목록 전체 개수 (U-20 페이지네이션용) — getList와 동일한 분기
+    public int countList(ListType listType, Long categoryId) {
+        return switch (listType) {
+            case CATEGORY -> {
+                if (categoryId == null) {
+                    throw new IllegalArgumentException("category_id는 CATEGORY 조회 시 필수입니다.");
+                }
+                yield repository.countByCategory(categoryId);
+            }
+            case BEST    -> repository.countByCuration("BEST");
+            case SALE    -> repository.countByCuration("SALE");
+            case NEW     -> repository.countByCuration("NEW_ARRIVAL");
+            case BENEFIT -> repository.countByCuration("BENEFIT");
+        };
+    }
+
     // 검색 (U-21)
     public List<ProductSummaryResponse> search(String keyword, ProductSort sort, int page) {
         return repository.search(keyword, sort, page);
+    }
+
+    // 검색 전체 개수 (U-21 페이지네이션용)
+    public int countSearch(String keyword) {
+        return repository.countBySearch(keyword);
     }
 
     // 상세 (U-22)

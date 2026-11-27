@@ -31,7 +31,7 @@ public class ProductController {
 
         return Map.of(
                 "code", "ok",
-                "num", products.size(),
+                "num", service.countList(listType, categoryId),   // 전체 개수(페이지네이션용)
                 "products", products
         );
     }
@@ -48,7 +48,7 @@ public class ProductController {
 
         return Map.of(
                 "code", "ok",
-                "num", products.size(),
+                "num", service.countSearch(keyword),   // 전체 개수(페이지네이션용)
                 "products", products
         );
     }
