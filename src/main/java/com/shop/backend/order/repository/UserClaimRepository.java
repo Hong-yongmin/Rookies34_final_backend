@@ -23,7 +23,7 @@ public class UserClaimRepository {
          * 환불은 order_item의 status가 paid일 때 가능, 반품은 COMPLETED일 때 가능
          * 취소는 현 단계에서 고려X
          */
-        String sql = "INSERT INTO claim (order_id, user_id, request_type, reason_type, reason_detail, status) "
+        String sql = "INSERT INTO claim (order_item_id, user_id, request_type, reason_type, reason_detail, status) "
                 + "VALUES (?, ?, ?, ?, ?, 'REQUESTED')";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
