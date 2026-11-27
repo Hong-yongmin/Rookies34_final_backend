@@ -65,7 +65,7 @@ public class InquiryController {
                     required = false
             ) String userId,
 
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(name = "page", defaultValue = "1") int page
     ) {
         if (userId == null) {
             throw new ResponseStatusException(
@@ -74,7 +74,7 @@ public class InquiryController {
             );
         }
 
-        return inquiryService.getInquiries(userId, page);
+        return inquiryService.getInquiries(userId, page > 0 ? page - 1 : page);
     }
 
     // 1:1 문의 상세 조회
