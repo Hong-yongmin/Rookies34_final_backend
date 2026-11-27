@@ -99,6 +99,25 @@ public class ProductRepository {
         return jdbcTemplate.query(sql, this::mapSummary);
     }
 
+    // 전체 개수 (페이지네이션용) — 목록/검색과 같은 WHERE, LIMIT 없음
+    public int countByCategory(Long categoryId) {
+        String sql = "SELECT COUNT(*) FROM product WHERE category_id=%d AND status='APPROVED'"
+                .formatted(categoryId);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public int countByCuration(String curation) {
+        String sql = "SELECT COUNT(*) FROM product WHERE curation='%s' AND status='APPROVED'"
+                .formatted(curation);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public int countBySearch(String keyword) {
+        String sql = "SELECT COUNT(*) FROM product WHERE name LIKE '%%%s%%' AND status='APPROVED'"
+                .formatted(keyword);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
     // 상세 (U-22) — 없으면 null
     public ProductDetailResponse getDetail(Long productId) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, stock, "
