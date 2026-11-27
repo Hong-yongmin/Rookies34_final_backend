@@ -41,13 +41,26 @@ public class ReviewController {
             @RequestAttribute(name = JwtAuthenticationFilter.MEMBER_ID, required = false) String userId,
             @RequestParam(name = "page", defaultValue = "1") int page
     ) {
+        validateMyReviewRequest(userId, page);
+        return reviewService.getWritableItems(userId, page);
+    }
+
+    @GetMapping("/me/reviews")
+    public Map<String, Object> getWrittenReviews(
+            @RequestAttribute(name = JwtAuthenticationFilter.MEMBER_ID, required = false) String userId,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        validateMyReviewRequest(userId, page);
+        return reviewService.getWrittenReviews(userId, page);
+    }
+
+    private void validateMyReviewRequest(String userId, int page) {
         if (userId == null || userId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         if (page < 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상이어야 합니다.");
         }
-        return reviewService.getWritableItems(userId, page);
     }
 
     @PostMapping({"/reviews", "/products/api/reviews"})

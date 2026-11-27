@@ -20,6 +20,31 @@ public class ReviewCreateRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    public record WrittenReviewRow(
+            int reviewId, int productId, String productName, int rating, String content, String createdAt
+    ) {}
+
+    public long countWrittenReviews(String userId) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM review WHERE user_id = ?", Long.class, userId);
+    }
+
+    public List<WrittenReviewRow> findWrittenReviews(String userId, int pageSize, long offset) {
+        String sql = """
+                SELECT r.review_id, r.product_id, COALESCE(oi.product_name, p.name, '상품') AS product_name,
+                       r.rating, r.content, r.created_at
+                FROM review r
+                LEFT JOIN order_item oi ON oi.order_item_id = r.order_item_id
+                LEFT JOIN product p ON p.product_id = r.product_id
+                WHERE r.user_id = ?
+                ORDER BY r.created_at DESC, r.review_id DESC
+                LIMIT ? OFFSET ?
+                """;
+        return jdbcTemplate.query(sql, (rs, row) -> new WrittenReviewRow(
+                rs.getInt("review_id"), rs.getInt("product_id"), rs.getString("product_name"),
+                rs.getInt("rating"), rs.getString("content"), rs.getString("created_at")
+        ), userId, pageSize, offset);
+    }
+
     public long countWritableItems(String userId) {
         return jdbcTemplate.queryForObject("SELECT COUNT(*) " + WRITABLE_ITEMS, Long.class, userId);
     }
