@@ -38,3 +38,4 @@ out/
 
 ### image folder ###
 uploads/
+*.jpg

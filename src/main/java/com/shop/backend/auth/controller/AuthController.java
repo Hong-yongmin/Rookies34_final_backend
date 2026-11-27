@@ -96,14 +96,17 @@ public class AuthController {
     }
 
     @PutMapping("/auth/password-reset")
-    public ResponseEntity<AuthResponse> resetPwd(
-            @RequestBody AuthRequest req
-    ){
-        if(//Objects.equals(req.getNew_password(), req.getNew_password_confirm()) &&
-                jwtUtil.extractClaims(req.getReset_token()) != null) {
-            return ResponseEntity.ok(authService.resetPassword(jwtUtil.extractClaims(req.getReset_token()), req.getNew_password()));
+    public ResponseEntity<AuthResponse> resetPwd(@RequestBody AuthRequest req){
+        String loginId;
+        try {
+            loginId = jwtUtil.extractClaims(req.getReset_token());
+        } catch (Exception e) {
+            loginId = null;
         }
-        else throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰 또는 패스워드 확인 실패");
+        if (loginId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰");
+        }
+        return ResponseEntity.ok(authService.resetPassword(loginId, req.getNew_password()));
     }
 
     @PostMapping("/auth/login")

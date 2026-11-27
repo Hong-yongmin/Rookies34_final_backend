@@ -78,6 +78,6 @@ public class AuthRepository {
         else{
             return false; // 사용자도 판매자도 아닌 경우 false 반환
         }
-        return jdbcTemplate.queryForList(sql).size() > 0;
+        return jdbcTemplate.update(sql) > 0;
     }
 }
