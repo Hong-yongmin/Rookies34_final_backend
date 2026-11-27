@@ -225,7 +225,8 @@ public class OrderRepository {
          * period(3M/6M/1Y), keyword(상품명)는 값이 있을 경우 조건 추가
          */
         String sql = ("SELECT o.order_id, o.ordered_at, o.total_amount, "
-                + "(SELECT oi.product_name, oi.status FROM order_item oi WHERE oi.order_id=o.order_id ORDER BY oi.order_item_id LIMIT 1) AS product_name, "
+                + "(SELECT oi.product_name FROM order_item oi WHERE oi.order_id=o.order_id ORDER BY oi.order_item_id LIMIT 1) AS product_name, "
+                + "(SELECT oi.status FROM order_item oi WHERE oi.order_id=o.order_id ORDER BY oi.order_item_id LIMIT 1) AS status,"
                 + "(SELECT COUNT(*) FROM order_item oi WHERE oi.order_id=o.order_id) AS item_count "
                 + "FROM orders o WHERE o.user_id='%s' ").formatted(id);
 
@@ -258,6 +259,7 @@ public class OrderRepository {
                         .order_id(rs.getLong("order_id"))
                         .ordered_at(rs.getString("ordered_at"))
                         .product_name(rs.getString("product_name"))
+                        .status(rs.getString("status"))
                         .item_count(rs.getInt("item_count"))
                         .total_amount(rs.getInt("total_amount")).build());
     }

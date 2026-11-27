@@ -37,7 +37,7 @@ public class SellerSettlementService {
     }
 
     public SettlementResponse applyWithdrawal(String id, Integer amount){
-        if(sellerSettlementRepository.applyWithdrawal(id, amount)){
+        if(amount != null && sellerSettlementRepository.applyWithdrawal(id, amount)){ // amount 누락 시 실패
             return SettlementResponse.builder()
                     .code("ok").build();
         }

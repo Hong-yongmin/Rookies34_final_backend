@@ -6,6 +6,7 @@ import com.shop.backend.settlement.dto.SettlementResponse;
 import com.shop.backend.settlement.dto.SellerRevenueRequest;
 import com.shop.backend.settlement.dto.SellerRevenueResponse;
 import com.shop.backend.settlement.dto.SellerWithdrawalResponse;
+import com.shop.backend.settlement.dto.WithdrawalRequest;
 import com.shop.backend.settlement.service.SellerSettlementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -46,11 +47,11 @@ public class SellerSettlementController {
     @PostMapping("/withdrawals")
     public ResponseEntity<SettlementResponse> applyWithdrawals(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
-            @RequestBody Integer amount
+            @RequestBody WithdrawalRequest req
     ){
         if(!sellerChecker.isSeller(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
         }
-        return ResponseEntity.ok(sellerSettlementService.applyWithdrawal(id, amount));
+        return ResponseEntity.ok(sellerSettlementService.applyWithdrawal(id, req.getAmount()));
     }
 }
