@@ -17,7 +17,7 @@ public class SellerProductResponse {
     private String thumbnail;
     private String created_at;  // DB date → 문자열로
 
-    public String getThumbnail_url() {
+    public String getThumbnail() {
         return thumbnail;
     }
 }
