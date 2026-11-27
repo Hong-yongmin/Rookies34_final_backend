@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
-public class CartRepositroy {
+public class CartRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
 

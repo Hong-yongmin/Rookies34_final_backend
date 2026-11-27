@@ -73,7 +73,7 @@ public class AuthRepository {
             sql = "UPDATE user SET password='%s' WHERE user_id='%s'".formatted(password, id);
         }
         else if(sellerChecker.isSeller(id)){
-            sql = "UPDATE seller SET password='%s' WHERE user_id='%s'".formatted(password, id);
+            sql = "UPDATE seller SET password='%s' WHERE seller_id='%s'".formatted(password, id);
         }
         else{
             return false; // 사용자도 판매자도 아닌 경우 false 반환

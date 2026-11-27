@@ -15,7 +15,7 @@ import lombok.Setter;
 public class SellerProductRequest {
 
     private String name;                // 상품명
-    private Long category_id;           // 카데고리 ID
+    private Long category_id;           // 카테고리 ID
     private int price;                  // 판매가
     private Integer discount_rate;      // 할인율
     private int stock;                  // 재고

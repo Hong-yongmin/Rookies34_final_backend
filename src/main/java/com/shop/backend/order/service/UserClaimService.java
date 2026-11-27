@@ -19,7 +19,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserClaimService {
 
-    private UserClaimRepository userClaimRepository;
+    private final UserClaimRepository userClaimRepository;
     private final FileUploader fileUploader;
 
     private DefaultResponse ok(){ return DefaultResponse.builder().code("ok").build(); }

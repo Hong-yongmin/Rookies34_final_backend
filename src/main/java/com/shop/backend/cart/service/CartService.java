@@ -1,7 +1,7 @@
 package com.shop.backend.cart.service;
 
 import com.shop.backend.cart.dto.*;
-import com.shop.backend.cart.repository.CartRepositroy;
+import com.shop.backend.cart.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -10,24 +10,24 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CartService {
-    private final CartRepositroy cartRepositroy;
+    private final CartRepository cartRepository;
 
     public Boolean addItem(String userId, CartItemsRequest req) {
-        List<Integer> cartId = cartRepositroy.findCartId(userId);
+        List<Integer> cartId = cartRepository.findCartId(userId);
         if (cartId.isEmpty()) {
-            cartRepositroy.createCart(userId);
-            cartId = cartRepositroy.findCartId(userId);
+            cartRepository.createCart(userId);
+            cartId = cartRepository.findCartId(userId);
         }
-        return cartRepositroy.addItem(cartId.get(0), req.getProduct_id(), req.getQuantity());
+        return cartRepository.addItem(cartId.get(0), req.getProduct_id(), req.getQuantity());
     }
 
     public CartResponse getCart(String userId) {
         CartResponse res = new CartResponse();
-        res.setItems(cartRepositroy.findItems(userId));
+        res.setItems(cartRepository.findItems(userId));
         res.setNum(res.getItems().size());
         res.setCode("ok");
 
-        List<Map<String, Object>> shipping = cartRepositroy.findShipping(userId);
+        List<Map<String, Object>> shipping = cartRepository.findShipping(userId);
         if (!shipping.isEmpty()) {
             Map<String, Object> s = shipping.get(0);
             res.setAddress_id((Integer) s.get("address_id"));
@@ -39,15 +39,15 @@ public class CartService {
     }
 
     public Boolean updateQuantity(Integer cartItemId, Integer quantity) {
-        return cartRepositroy.updateQuantity(cartItemId, quantity);
+        return cartRepository.updateQuantity(cartItemId, quantity);
     }
 
     public Boolean deleteItems(List<Integer> cartItemIds) {
-        return cartRepositroy.deleteItems(cartItemIds);
+        return cartRepository.deleteItems(cartItemIds);
     }
 
     public Boolean updateShipping(String userId, CartShippingAddressRequest req) {
-        if (cartRepositroy.findCartId(userId).isEmpty()) cartRepositroy.createCart(userId);
-        return cartRepositroy.updateShipping(userId, req.getAddress_id());
+        if (cartRepository.findCartId(userId).isEmpty()) cartRepository.createCart(userId);
+        return cartRepository.updateShipping(userId, req.getAddress_id());
     }
 }

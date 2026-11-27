@@ -1,5 +1,6 @@
 package com.shop.backend.order.repository;
 
+import com.shop.backend.global.common.CommonFunction;
 import com.shop.backend.order.dto.Claim;
 import com.shop.backend.order.dto.ClaimRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Objects;
 public class UserClaimRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CommonFunction cf;
 
     public Integer requestClaim(ClaimRequest req, Integer order_id, String user_id){
         /*
@@ -24,8 +26,9 @@ public class UserClaimRepository {
          * 환불은 order_item의 status가 paid일 때 가능, 반품은 COMPLETED일 때 가능
          * 취소는 현 단계에서 고려X
          */
-        String sql = "INSERT INTO claim (order_id, user_id, request_type, reason_type, reason_detail, status)"
-                + "VALUES (%d, '%s', '%s', '%s', '%s', 'REQUESTED'".formatted(order_id, user_id, req.getRequest_type(), req.getReason_detail());
+        String sql = ("INSERT INTO claim (order_id, user_id, request_type, reason_type, reason_detail, status) "
+                + "VALUES (%d, '%s', '%s', '%s', %s, 'REQUESTED')").formatted(
+                order_id, user_id, req.getRequest_type(), req.getReason_type(), cf.q(req.getReason_detail()));   // 상세 사유는 없으면 NULL
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         int rows = jdbcTemplate.update(
@@ -39,7 +42,7 @@ public class UserClaimRepository {
 
     public String getStatus(Integer order_id){
         // 취소/환불/교환 신청 주문 상품 상태 확인
-        return jdbcTemplate.queryForObject("SELECT status FROM order_item WHERE order_d=%d".formatted(order_id),
+        return jdbcTemplate.queryForObject("SELECT status FROM order_item WHERE order_id=%d".formatted(order_id),
                 String.class);
     }
 
@@ -52,7 +55,7 @@ public class UserClaimRepository {
         /*
          * 결제 방식이 현금인 경우 계좌 정보 추가
          */
-        String sql = ("UPDATE claim SET refund_bank='%s', refund_account_no='%s', refund_account_holder='%s'"
+        String sql = ("UPDATE claim SET refund_bank='%s', refund_account_no='%s', refund_account_holder='%s' "
                 + "WHERE claim_id=%d").formatted(refund_bank, refund_account_no, refund_account_holder, claim_id);
         return jdbcTemplate.update(sql) > 0;
     }
@@ -72,7 +75,7 @@ public class UserClaimRepository {
         List<Integer> order_item_ids = getOrderItemIds(order_id);
         String sql;
         for(Integer order_item_id:order_item_ids){
-            sql = ("INSERT INTO claim_item (claim_id, order_item_id, order_id)"
+            sql = ("INSERT INTO claim_item (claim_id, order_item_id, order_id) "
                     + "VALUES (%d, %d, %d)").formatted(claim_id, order_item_id, order_id);
             if(jdbcTemplate.update(sql) <= 0){
                 return false;
@@ -85,7 +88,7 @@ public class UserClaimRepository {
         /*
          * claim 이미지 경로 저장
          */
-        String sql = ("INSERT INTO claim_image (claim_id, url)"
+        String sql = ("INSERT INTO claim_image (claim_id, url) "
                     + "VALUES (%d, '%s')").formatted(claim_id, file_path);
         return jdbcTemplate.update(sql) > 0;
     }
@@ -106,7 +109,7 @@ public class UserClaimRepository {
                         .request_type(rs.getString("request_type"))
                         .reason_type(rs.getString("reason_type"))
                         .status(rs.getString("status"))
-                        .created_at(rs.getString("created_at"))
+                        .created_at(rs.getString("requested_at"))   // claim 테이블 컬럼명은 requested_at
                         .build());
     }
 }

@@ -225,7 +225,7 @@ public class OrderRepository {
          * period(3M/6M/1Y), keyword(상품명)는 값이 있을 경우 조건 추가
          */
         String sql = ("SELECT o.order_id, o.ordered_at, o.total_amount, "
-                + "(SELECT oi.product_name FROM order_item oi WHERE oi.order_id=o.order_id ORDER BY oi.order_item_id LIMIT 1) AS product_name, "
+                + "(SELECT oi.product_name, oi.status FROM order_item oi WHERE oi.order_id=o.order_id ORDER BY oi.order_item_id LIMIT 1) AS product_name, "
                 + "(SELECT COUNT(*) FROM order_item oi WHERE oi.order_id=o.order_id) AS item_count "
                 + "FROM orders o WHERE o.user_id='%s' ").formatted(id);
 

@@ -19,18 +19,18 @@ public class SellerSettlementRepository {
         /*
          * 판매자 수익금 내역 조회
          */
-        String sql = ("SELECT s.seller_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
-                + "FROM order_item o, settlement s "
-                + "WHERE s.seller_id = o.seller_id AND s.seller_id='%s' AND o.seller_id='%s'").formatted(id, id);
+        String sql = ("SELECT s.seller_id, s.settlement_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, os.ordered_at "
+                + "FROM order_item o, settlement s, orders os "
+                + "WHERE s.order_item_id = o.order_item_id AND o.order_id = os.order_id AND s.seller_id='%s'").formatted(id);
 
         if(req.getStatus() != null){
             sql += " AND s.status='%s'".formatted(req.getStatus());
         }
         if(req.getDate_from() != null){
-            sql += " AND o.ordered_at >= STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s')".formatted(req.getDate_from());
+            sql += " AND os.ordered_at >= STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s')".formatted(req.getDate_from());
         }
         if(req.getDate_to() != null){
-            sql += " AND o.ordered_at <= DATE_ADD(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL 1 DAY)".formatted(req.getDate_to());
+            sql += " AND os.ordered_at <= DATE_ADD(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL 1 DAY)".formatted(req.getDate_to());
             // 지정한 날짜까지 검색하기 위해 하루 추가
         }
         if(req.getPage() != null && req.getPage() > 0){
@@ -39,12 +39,13 @@ public class SellerSettlementRepository {
         return jdbcTemplate.query(sql, (rs, i)
                 ->Revenue.builder()
                 .seller_id(rs.getString("s.seller_id"))
+                .settlement_id(rs.getInt("s.settlement_id"))
                 .order_item_id(rs.getInt("s.order_item_id"))
                 .order_amount(rs.getInt("s.order_amount"))
                 .commission(rs.getInt("s.commission"))
                 .settlement_amount(rs.getInt("s.settlement_amount"))
                 .status(rs.getString("s.status"))
-                .created_at(rs.getString("o.ordered_at")).build());
+                .created_at(rs.getString("os.ordered_at")).build());
     }
 
     public List<Withdrawal> getWithdrawals(String id, Integer page){

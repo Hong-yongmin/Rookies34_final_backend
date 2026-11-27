@@ -113,7 +113,7 @@ public class InquiryService {
             int page
     ) {
         // 페이지 번호 검증
-        if (page < 0) {
+        if (page < 1) {
             throw new IllegalArgumentException(
                     "페이지 번호는 0 이상이어야 합니다."
             );
@@ -123,7 +123,7 @@ public class InquiryService {
         int pageSize = 10;
 
         // 페이지 정보 생성
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page-1, pageSize);
 
         // 해당 페이지의 문의 목록 조회
         List<Inquiry> inquiries =

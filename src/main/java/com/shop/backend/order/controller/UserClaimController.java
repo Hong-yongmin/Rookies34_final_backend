@@ -20,11 +20,11 @@ public class UserClaimController {
     private final UserChecker userChecker;
     private final UserClaimService userClaimService;
 
-    @PostMapping("/{orderId}/claims")
+    @PostMapping("/orders/{orderId}/claims")    // multipart/form-data로 수신 (photo_files는 파일)
     public ResponseEntity<DefaultResponse> requestClaim(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("orderId") Integer order_id,
-            @RequestBody ClaimRequest req){
+            @ModelAttribute ClaimRequest req){
         if (!userChecker.isUser(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
         }
