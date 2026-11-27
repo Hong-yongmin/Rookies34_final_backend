@@ -2,14 +2,18 @@ package com.shop.backend.seller.product.controller;
 
 import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.SellerChecker;
-import com.shop.backend.product.dto.DetailResponse;
+import com.shop.backend.seller.product.dto.SellerProductEditResponse;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
 import com.shop.backend.seller.product.dto.SellerProductResponse;
+import com.shop.backend.seller.product.dto.SellerProductUpdateRequest;
 import com.shop.backend.seller.product.service.SellerProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -44,20 +48,20 @@ public class SellerProductController {
     }
 
     @GetMapping("/{productId}")
-    public DetailResponse detail(
+    public SellerProductEditResponse detail(
             @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
-            @PathVariable Long productId) {
-        if (!sellerChecker.isSeller(id)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
-        }
-        return DetailResponse.builder().code("ok").detail(sellerProductService.getDetail(productId, id)).build();
+            @PathVariable Long productId,
+            HttpServletRequest request) {
+        requireSeller(id);
+        return editResponse(productId, id, request.getContextPath());
     }
 
     // 상품 등록 (S-02)
     @PostMapping
     public Map<String, Object> register(
             @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
-            @ModelAttribute SellerProductRequest req) {
+            @ModelAttribute SellerProductRequest req,
+            HttpServletRequest request) {
 
         // 판매자 권한 확인
         if (!sellerChecker.isSeller(id)) {
@@ -65,24 +69,47 @@ public class SellerProductController {
         }
 
         // 등록 (토큰의 id를 seller_id로)
-        sellerProductService.register(req, id);
+        sellerProductService.register(req, id, request.getContextPath());
         return Map.of("code", "ok");
     }
 
     // 상품 수정 (S-02)
-    @PutMapping("/{productId}")
-    public Map<String, Object> update(
+    @PutMapping(path = "/{productId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
+            MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    public SellerProductEditResponse updateForm(
             @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
             @PathVariable Long productId,
-            @ModelAttribute SellerProductRequest req) {
+            @ModelAttribute SellerProductUpdateRequest req,
+            @RequestParam(name = "thumbnail", required = false) MultipartFile thumbnail,
+            @RequestParam(name = "detail_images", required = false) List<MultipartFile> detailImages,
+            HttpServletRequest request) {
+        requireSeller(id);
+        String contextPath = request.getContextPath();
+        var detail = sellerProductService.update(productId, req, id, thumbnail, detailImages, contextPath);
+        return new SellerProductEditResponse("ok", new SellerProductEditResponse.Product(detail, contextPath));
+    }
 
-        // 판매자 권한 확인
+    @PutMapping(path = "/{productId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public SellerProductEditResponse updateJson(
+            @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
+            @PathVariable Long productId,
+            @RequestBody SellerProductUpdateRequest req,
+            HttpServletRequest request) {
+        requireSeller(id);
+        String contextPath = request.getContextPath();
+        var detail = sellerProductService.update(productId, req, id, null, null, contextPath);
+        return new SellerProductEditResponse("ok", new SellerProductEditResponse.Product(detail, contextPath));
+    }
+
+    private SellerProductEditResponse editResponse(Long productId, String sellerId, String contextPath) {
+        var detail = sellerProductService.getDetail(productId, sellerId);
+        return new SellerProductEditResponse("ok", new SellerProductEditResponse.Product(detail, contextPath));
+    }
+
+    private void requireSeller(String id) {
         if (!sellerChecker.isSeller(id)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
         }
-
-        sellerProductService.update(productId, req, id);
-        return Map.of("code", "ok");
     }
 
     // 등록 상품 삭제 (새 API)
