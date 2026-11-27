@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 상품 이미지만 공개 서빙 (certs 등 다른 폴더는 노출 안 됨)
         registry.addResourceHandler("/uploads/products/**")              // 이 URL로 오면
-                .addResourceLocations("file:" + productUploadDir + "/"); // 이 절대경로에서 찾아 줌
+                .addResourceLocations("file:" + productUploadDir + "/", "classpath:/product-image-fallback/");
         registry.addResourceHandler(ReviewImageStorage.URL_PREFIX + "**")
                 .addResourceLocations(java.nio.file.Path.of(reviewUploadDir).toAbsolutePath()
                         .normalize().toUri().toASCIIString().replaceFirst("/?$", "/"));
