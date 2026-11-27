@@ -40,6 +40,7 @@ public class ProductService {
     // 목록 전체 개수 (U-20 페이지네이션용) — getList와 동일한 분기
     public int countList(ListType listType, Long categoryId) {
         return switch (listType) {
+            case ALL      -> repository.countByCategory(null);
             case CATEGORY -> {
                 if (categoryId == null) {
                     throw new IllegalArgumentException("category_id는 CATEGORY 조회 시 필수입니다.");
