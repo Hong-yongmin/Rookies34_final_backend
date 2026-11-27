@@ -32,7 +32,7 @@ public class ProductInquiryRepository {
             String answer = rs.getString("answer");
             return ProductInquiryResponse.builder()
                         .inquiry_id(rs.getLong("inquiry_id"))
-                        .title(visible ? rs.getString("title") : "비밀글입니다.")
+                        .title(visible ? rs.getString("title") : "접근 권한이 없습니다.")
                         .writer(visible ? writer : "-")
                         .created_at(rs.getString("created_at"))
                         .is_secret(secret)

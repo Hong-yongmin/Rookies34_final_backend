@@ -20,30 +20,30 @@ public class AddressController {
     @GetMapping
     public Object getMyAddresses(@RequestAttribute(name = "memberid", required = false) String userId) {
         if (!userChecker.isUser(userId)) return NO;
-        return Map.of("code", "ok", "addresses", addressService.getMyAddresses(userId));
+        return addressService.getAddresses(userId);
     }
 
     @PostMapping
     public Map<String, String> addAddress(@RequestAttribute(name = "memberid", required = false) String userId,
                                           @RequestBody AddressCreateRequest req) {
         if (!userChecker.isUser(userId)) return NO;
-        if (addressService.addAddress(userId, req)) return OK;
+        if ("ok".equals(addressService.addAddress(req, userId).getCode())) return OK;
         return NO;
     }
 
     @PutMapping("/{addressId}")
     public Map<String, String> updateAddress(@RequestAttribute(name = "memberid", required = false) String userId,
-                                             @PathVariable Integer addressId, @RequestBody AddressUpdateRequest req) {
+                                             @PathVariable("addressId") Integer addressId, @RequestBody AddressUpdateRequest req) {
         if (!userChecker.isUser(userId)) return NO;
-        if (addressService.updateAddress(userId, addressId, req)) return OK;
+        if ("ok".equals(addressService.updateAddress(userId, addressId, req).getCode())) return OK;
         return NO;
     }
 
     @DeleteMapping("/{addressId}")
     public Map<String, String> deleteAddress(@RequestAttribute(name = "memberid", required = false) String userId,
-                                             @PathVariable Integer addressId) {
+                                             @PathVariable("addressId") Integer addressId) {
         if (!userChecker.isUser(userId)) return NO;
-        if (addressService.deleteAddress(addressId)) return OK;
+        if ("ok".equals(addressService.deleteAddress(userId, addressId).getCode())) return OK;
         return NO;
     }
 }

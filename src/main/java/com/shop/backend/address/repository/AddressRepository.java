@@ -25,20 +25,20 @@ public class AddressRepository {
     }
 
     //  배송지 수정 성공 시 true 반환 (해당 배송지가 없으면 false)
-    public Boolean updateAddress(Integer addressId, AddressUpdateRequest req) {
+    public Boolean updateAddress(String userId, Integer addressId, AddressUpdateRequest req) {
         String sql = "UPDATE address SET recipient_name = ?, recipient_phone = ?, zipcode = ?, "
-                + "address = ?, address_detail = ?, is_default = ? WHERE address_id = ?";
+                + "address = ?, address_detail = ?, is_default = ? WHERE address_id = ? AND user_id = ?";
         int rows = jdbcTemplate.update(sql,
                 req.getRecipient_name(), req.getRecipient_phone(), req.getZipcode(),
                 req.getAddress(), req.getAddress_detail(), Boolean.TRUE.equals(req.getIs_default()),
-                addressId);
+                addressId, userId);
         return rows > 0;
     }
 
     //  배송지 삭제 성공 시 true 반환 (해당 배송지가 없으면 false)
-    public Boolean deleteAddress(Integer addressId) {
-        String sql = "DELETE FROM address WHERE address_id = ?";
-        int rows = jdbcTemplate.update(sql, addressId);
+    public Boolean deleteAddress(String userId, Integer addressId) {
+        String sql = "DELETE FROM address WHERE address_id = ? AND user_id = ?";
+        int rows = jdbcTemplate.update(sql, addressId, userId);
         return rows > 0;
     }
 

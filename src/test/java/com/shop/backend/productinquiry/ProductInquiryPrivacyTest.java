@@ -45,7 +45,7 @@ class ProductInquiryPrivacyTest {
             assertEquals("Private content", inquiry.getContent());
             assertEquals("Private answer", inquiry.getAnswer());
         } else {
-            assertEquals("비밀글입니다.", inquiry.getTitle());
+            assertEquals("접근 권한이 없습니다.", inquiry.getTitle());
             assertEquals("-", inquiry.getWriter());
             assertNull(inquiry.getContent());
             assertNull(inquiry.getAnswer());
