@@ -1,13 +1,9 @@
 package com.shop.backend.product.service;
 
-import com.shop.backend.product.dto.ListType;
-import com.shop.backend.product.dto.ProductDetailResponse;
-import com.shop.backend.product.dto.ProductSort;
-import com.shop.backend.product.dto.ProductSummaryResponse;
+import com.shop.backend.product.dto.*;
 import com.shop.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -39,12 +35,12 @@ public class ProductService {
     }
 
     // 상세 (U-22)
-    public ProductDetailResponse getDetail(Long productId) {
+    public DetailResponse getDetail(Long productId) {
         ProductDetailResponse detail = repository.getDetail(productId);
         if (detail == null) {
             throw new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId);
         }
         detail.setDetail_images(repository.getDetailImages(productId));   // 상세 이미지 별도 조회
-        return detail;
+        return DetailResponse.builder().code("ok").detail(detail).build();
     }
 }

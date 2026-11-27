@@ -2,11 +2,12 @@ package com.shop.backend.global.common;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Base64;
+import java.io.InputStream;
 
 @Component
 public class FileUploader {
@@ -15,32 +16,29 @@ public class FileUploader {
     @Value("${file.upload-dir:/var/shop/uploads}")
     private String uploadDir;
 
-    public String save(String base64, String fileName, String subDir) throws IOException {
+    public String save(MultipartFile file, String subDir) throws IOException {
         /*
-         * base64로 인코딩된 파일을 디코딩해 {uploadDir}/{subDir}/{fileName} 에 저장
-         * 파일명은 클라이언트가 보낸 값 그대로 사용 (확장자·경로 검증 없음, 같은 이름은 덮어씀)
-         * 저장된 파일 경로 반환 -> DB에 저장
+         * multipart로 받은 파일을 {uploadDir}/{subDir}/{원본 파일명} 에 저장
+         * 파일명은 클라이언트가 보낸 원본 파일명 그대로 사용
+         * 업로드 루트 기준 상대 경로({subDir}/{원본 파일명}) 반환 -> DB에 저장, 다운로드 시 그대로 사용
          */
-        if (base64.contains(",")) { // data:...;base64, 형식이면 앞부분 제거
-            base64 = base64.substring(base64.indexOf(",") + 1);
-        }
-        byte[] data = Base64.getMimeDecoder().decode(base64); // 줄바꿈 등 포함돼도 디코딩
-
         String dirPath = uploadDir + "/" + subDir;
         new File(dirPath).mkdirs();
 
-        String path = dirPath + "/" + fileName;
-        try (FileOutputStream fos = new FileOutputStream(path)) {
-            fos.write(data);
+        String relativePath = subDir + "/" + file.getOriginalFilename();
+        String path = uploadDir + "/" + relativePath;
+        try (InputStream in = file.getInputStream();
+             FileOutputStream fos = new FileOutputStream(path)) {
+            in.transferTo(fos);
         }
-        return path;
+        return relativePath;
     }
 
     public void delete(String path) {
         /*
-         * 저장된 파일 삭제 (DB 저장 실패 시 정리용)
+         * 저장된 파일 삭제, path는 save()가 반환한 상대 경로
          */
         if (path == null) return;
-        new File(path).delete();
+        new File(uploadDir + "/" + path).delete();
     }
 }

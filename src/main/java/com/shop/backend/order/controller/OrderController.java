@@ -4,6 +4,7 @@ import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.UserChecker;
 import com.shop.backend.order.dto.*;
 import com.shop.backend.order.service.OrderService;
+import com.shop.backend.order.service.UserClaimService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,6 @@
 package com.shop.backend.settlement.repository;
 
-import com.shop.backend.settlement.dto.AdminRevenueRequest;
-import com.shop.backend.settlement.dto.AdminWithdrawalRequest;
-import com.shop.backend.settlement.dto.Revenue;
-import com.shop.backend.settlement.dto.Withdrawal;
+import com.shop.backend.settlement.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,14 +20,14 @@ public class AdminSettlementRepository {
          * 쿼리 성공 시 true 반환
          */
         String sql = "UPDATE commission_rate SET commission_rate='%s' WHERE seller_id='%s'".formatted(rate, id);
-        return !jdbcTemplate.queryForList(sql).isEmpty();
+        return jdbcTemplate.update(sql) > 0;
     }
 
     public List<Revenue> getRevenues(AdminRevenueRequest req){
         /*
          * 관리자 수익 조회
          */
-        String sql = "SELECT s.seller_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
+        String sql = "SELECT s.seller_id, s.settlement_id, s.order_item_id, s.order_amount, s.commission, s.settlement_amount, s.status, o.ordered_at "
                 + "FROM order_item o, settlement s"
                 + "WHERE o.seller_id = s.seller_id";
 
@@ -54,6 +51,7 @@ public class AdminSettlementRepository {
         return jdbcTemplate.query(sql,
                 (rs, i) -> Revenue.builder()
                         .seller_id(rs.getString("s.seller_id"))
+                        .settlement_id(rs.getInt("s.settlement_id"))
                         .order_item_id(rs.getInt("s.order_item_id"))
                         .order_amount(rs.getInt("s.order_amount"))
                         .commission(rs.getInt("s.commission"))
@@ -101,5 +99,21 @@ public class AdminSettlementRepository {
                         .build());
     }
 
+    public Boolean confirmSettlement(Integer settlement_id, String decision){
+        /*
+         * 관리자 정산 확정
+         */
+        String sql = "UPDATE settlement SET status='%s' WHERE settlement_id='%d'".formatted(decision, settlement_id);
+        return jdbcTemplate.update(sql) > 0;
+    }
 
+    public Boolean confirmWithdrawal(Integer withdrawal_id, String decision){
+        /*
+         * 관리자 출금 승인
+         */
+        String sql = ("UPDATE withdrawal SET withdrawal_id='%s', processed_at=now() "
+                + "WHERE withdrawal_id='%s'").formatted(decision, withdrawal_id);
+
+        return jdbcTemplate.update(sql) > 0;
+    }
 }

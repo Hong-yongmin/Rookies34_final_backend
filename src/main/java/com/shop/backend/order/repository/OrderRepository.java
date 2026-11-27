@@ -128,9 +128,9 @@ public class OrderRepository {
          * 금액은 서비스에서 계산한 값 사용
          * 생성된 order_id 반환, 실패 시 null
          */
-        String sql = ("INSERT INTO orders (user_id, payment_method, product_amount, discount_amount, coupon_id, coupon_discount, "
+        String sql = ("INSERT INTO orders (user_id, status, payment_method, product_amount, discount_amount, coupon_id, coupon_discount, "
                 + "use_points, total_amount, recipient_name, recipient_phone, zipcode, address, address_detail, delivery_request, ordered_at) "
-                + "VALUES ('%s', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s)").formatted(
+                + "VALUES ('%s', 'PAID', '%s', %d, %d, %s, %d, %d, %d, '%s', '%s', '%s', '%s', %s, %s, NOW())").formatted(   // ordered_at = 주문 시각
                 id, req.getPayment_method(), product_amount, discount_amount,
                 req.getCoupon_id() == null ? "NULL" : req.getCoupon_id(), coupon_discount, use_points, total_amount,
                 req.getRecipient_name(), req.getRecipient_phone(), addr.getZipcode(), addr.getAddress(),
@@ -161,10 +161,15 @@ public class OrderRepository {
     public Boolean updateSettlement(Long order_id){
         /*
          * 정산 추가
+         * 주문 금액 = 판매가 × 수량
+         * commission_rate 테이블은 0~1 비율, settlement.commission_rate는 0~100(%) → ×100 해서 저장
+         * 수수료는 원 단위 절사, 정산액 = 주문 금액 - 수수료 (settlement CHECK 조건과 일치)
          */
         String sql = ("INSERT INTO settlement (seller_id, order_item_id, order_amount, commission_rate, commission, settlement_amount, status) "
-                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate, o.order_amount * c.commission_rate, order_amount - (o.order_amount * c.commission_rate), 'PENDING'"
-                + "FROM order_item o, commission_rate c WHERE o.order_id='%d' AND c.seller_id=o.seller_id").formatted(order_id);
+                + "SELECT o.seller_id, o.order_item_id, o.price * o.quantity, c.commission_rate * 100, "
+                + "FLOOR(o.price * o.quantity * c.commission_rate), "
+                + "o.price * o.quantity - FLOOR(o.price * o.quantity * c.commission_rate), 'PENDING' "
+                + "FROM order_item o, commission_rate c WHERE o.order_id=%d AND c.seller_id=o.seller_id").formatted(order_id);
 
         return jdbcTemplate.update(sql) > 0;
     }
@@ -293,5 +298,16 @@ public class OrderRepository {
                         .quantity(rs.getInt("quantity"))
                         .price(rs.getInt("price"))
                         .status(rs.getString("status")).build());
+    }
+    public Boolean isOrderOwnedByUser(String userId, Integer orderId) {
+        String sql = "SELECT * FROM orders WHERE order_id=%d AND user_id='%s'"
+                .formatted(orderId, userId);
+
+        List<Integer> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getInt("order_id")
+        );
+
+        return !result.isEmpty();
     }
 }

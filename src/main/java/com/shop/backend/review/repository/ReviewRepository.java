@@ -16,7 +16,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             Pageable pageable
     );
 
-    boolean existsByOrder_item_id(Integer order_item_id);
+    // 메서드 이름 방식은 '_'를 연관 필드 구분자로 해석하므로 @Query로 작성
+    @Query("SELECT COUNT(r) > 0 FROM Review r WHERE r.order_item_id = :orderItemId")
+    boolean existsByOrderItemId(@Param("orderItemId") Integer orderItemId);
 }
-
 

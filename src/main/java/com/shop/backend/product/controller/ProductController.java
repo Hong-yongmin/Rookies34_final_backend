@@ -1,10 +1,8 @@
 package com.shop.backend.product.controller;
 
-import com.shop.backend.product.dto.ListType;
-import com.shop.backend.product.dto.ProductDetailResponse;
-import com.shop.backend.product.dto.ProductSort;
-import com.shop.backend.product.dto.ProductSummaryResponse;
+import com.shop.backend.product.dto.*;
 import com.shop.backend.product.service.ProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,8 +56,7 @@ public class ProductController {
     // 상품 상세 조회 (U-22)
     // GET /api/products/{productId}
     @GetMapping("/{productId}")
-    public Map<String, Object> detail(@PathVariable Long productId) {
-        ProductDetailResponse product = service.getDetail(productId);
-        return Map.of("code", "ok", "product", product);
+    public ResponseEntity<DetailResponse> detail(@PathVariable Long productId) {
+        return ResponseEntity.ok(service.getDetail(productId));
     }
 }
