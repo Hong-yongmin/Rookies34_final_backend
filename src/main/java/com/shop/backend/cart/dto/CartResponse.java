@@ -29,6 +29,10 @@ public class CartResponse {
         private Integer discount_rate;
         private Integer sale_price;
         private String thumbnail;
+
+        public String getThumbnail_url() {
+            return thumbnail;
+        }
     }
 
 }

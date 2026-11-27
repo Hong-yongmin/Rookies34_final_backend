@@ -16,4 +16,8 @@ public class SellerProductResponse {
     private String status;      // 판매자용 — 상태
     private String thumbnail;
     private String created_at;  // DB date → 문자열로
+
+    public String getThumbnail_url() {
+        return thumbnail;
+    }
 }
