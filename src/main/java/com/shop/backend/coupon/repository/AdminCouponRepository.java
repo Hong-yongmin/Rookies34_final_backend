@@ -13,14 +13,11 @@ import java.util.List;
 public class AdminCouponRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    public List<Coupons> getCoupons(Integer page, String status, String date_from, String date_to){
+    public List<Coupons> getCoupons(Integer page, String date_from, String date_to){
         /*
          * 관리자 쿠폰 조회
          */
         String sql = "SELECT * FROM coupon WHERE 1=1"; // 조건 추가용 더미 조건 추가
-        if(status != null){
-            sql += " AND status='%s'".formatted(status);
-        }
         if(date_from != null){
             sql += " AND valid_from >= STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s')".formatted(date_from);
         }
@@ -40,7 +37,6 @@ public class AdminCouponRepository {
                 .min_order_amount(rs.getInt("min_order_amount"))
                 .valid_from(rs.getString("valid_from"))
                 .valid_to(rs.getString("valid_to"))
-                .status(rs.getString("status"))
                 .build());
     }
 

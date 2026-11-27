@@ -24,14 +24,13 @@ public class AdminCouponController {
     public ResponseEntity<CouponListResponse> getCoupons(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) String status,
             @RequestParam(required = false) String date_from,
             @RequestParam(required = false) String date_to
     ){
         if(!adminChecker.isAdmin(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 권한 필요");
         }
-        return ResponseEntity.ok(adminCouponService.getCoupons(page, status, date_from, date_to));
+        return ResponseEntity.ok(adminCouponService.getCoupons(page, date_from, date_to));
     }
 
     @PostMapping

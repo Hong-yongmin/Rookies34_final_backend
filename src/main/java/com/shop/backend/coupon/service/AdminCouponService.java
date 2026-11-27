@@ -17,8 +17,8 @@ import java.time.LocalDate;
 public class AdminCouponService {
     private final AdminCouponRepository adminCouponRepository;
 
-    public CouponListResponse getCoupons(Integer page, String status, String date_from, String date_to){
-        List<Coupons> coupons = adminCouponRepository.getCoupons(page, status, date_from, date_to);
+    public CouponListResponse getCoupons(Integer page, String date_from, String date_to){
+        List<Coupons> coupons = adminCouponRepository.getCoupons(page, date_from, date_to);
 
         return CouponListResponse.builder()
                 .code("ok")

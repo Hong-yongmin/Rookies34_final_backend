@@ -76,7 +76,9 @@ public class UserClaimRepository {
         /*
          * 취소/반품/교환 내역 조회
          */
-        String sql = "SELECT * FROM claim WHERE user_id='%s'".formatted(user_id);
+        String sql = ("SELECT c.claim_id, c.order_item_id, oi.order_id, c.request_type, c.reason_type, c.status, c.requested_at "
+                + "FROM claim c JOIN order_item oi ON c.order_item_id = oi.order_item_id "
+                + "WHERE c.user_id='%s' ORDER BY c.requested_at DESC").formatted(user_id);
         if(page != null && page > 0){
             sql += " LIMIT 10 OFFSET %d".formatted((page-1)*10);
         }
@@ -84,6 +86,7 @@ public class UserClaimRepository {
         return jdbcTemplate.query(sql,
                 (rs, i)->Claim.builder()
                         .claim_id(rs.getInt("claim_id"))
+                        .order_id(rs.getInt("order_id"))   // order_item 조인으로 가져온 주문 번호
                         .order_item_id(rs.getInt("order_item_id"))
                         .request_type(rs.getString("request_type"))
                         .reason_type(rs.getString("reason_type"))
