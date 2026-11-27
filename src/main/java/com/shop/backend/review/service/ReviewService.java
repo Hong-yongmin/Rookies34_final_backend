@@ -34,6 +34,7 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewWriterRepository reviewWriterRepository;
     private final ReviewCreateRepository reviewCreateRepository;
+    private final ReviewImageStorage reviewImageStorage;
 
     @Transactional(readOnly = true)
     public Map<String, Object> getWrittenReviews(String userId, int page) {
@@ -167,7 +168,8 @@ public class ReviewService {
     @Transactional
     public Review createReviewWithValidation(
             ReviewCreateRequest request,
-            String userId
+            String userId,
+            String contextPath
     ) {
         try {
             // 1. 주문 상품 조회
@@ -197,7 +199,20 @@ public class ReviewService {
             );
 
             // 5. 후기 저장
-            return createReview(request, userId, orderItem);
+            Review review = createReview(request, userId, orderItem);
+            if (request.getImages() != null) {
+                var images = request.getImages().stream()
+                        .filter(file -> !file.isEmpty())
+                        .map(file -> {
+                            ReviewImage image = new ReviewImage();
+                            image.setReview_id(review.getReview_id());
+                            image.setUrl(reviewImageStorage.save(file, contextPath));
+                            return image;
+                        })
+                        .toList();
+                reviewImageRepository.saveAll(images);
+            }
+            return review;
 
         } catch (EmptyResultDataAccessException e) {
             throw new IllegalArgumentException(
