@@ -3,6 +3,7 @@ package com.shop.backend.seller.product.repository;
 import com.shop.backend.global.common.CommonFunction;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
 import com.shop.backend.seller.product.dto.SellerProductResponse;
+import com.shop.backend.seller.product.dto.SellerProductUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -55,15 +56,16 @@ public class SellerProductRepository {
     }
 
     // 상품 수정 (S-02)
-    public void updateProduct(Long productId, String sellerId, SellerProductRequest req, String thumbnailUrl) {
-        int discountRate = (req.getDiscount_rate() != null) ? req.getDiscount_rate() : 0;
-        String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
+    public void updateProduct(Long productId, String sellerId, SellerProductUpdateRequest req, String thumbnailUrl) {
+        String storageType = req.getStorage_type() == null ? null : req.getStorage_type().name();
 
         jdbcTemplate.update("""
-                UPDATE product SET category_id = ?, name = ?, price = ?, discount_rate = ?, stock = ?,
-                    storage_type = ?, origin = ?, description = ?, thumbnail = COALESCE(?, thumbnail)
+                UPDATE product SET category_id = COALESCE(?, category_id), name = COALESCE(?, name),
+                    price = COALESCE(?, price), discount_rate = COALESCE(?, discount_rate), stock = COALESCE(?, stock),
+                    storage_type = COALESCE(?, storage_type), origin = COALESCE(?, origin),
+                    description = COALESCE(?, description), thumbnail = COALESCE(?, thumbnail)
                 WHERE product_id = ? AND seller_id = ?
-                """, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
+                """, req.getCategory_id(), req.getName(), req.getPrice(), req.getDiscount_rate(), req.getStock(),
                 storageType, req.getOrigin(), req.getDescription(), thumbnailUrl, productId, sellerId);
     }
 
