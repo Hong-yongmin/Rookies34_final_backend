@@ -32,12 +32,12 @@ public class ProductInquiryRepository {
             String answer = rs.getString("answer");
             return ProductInquiryResponse.builder()
                         .inquiry_id(rs.getLong("inquiry_id"))
-                        .title(visible ? rs.getString("title") : "접근 권한이 없습니다.")
+                        .title(visible ? rs.getString("title") : "비밀글입니다.")
                         .writer(visible ? writer : "-")
                         .created_at(rs.getString("created_at"))
                         .is_secret(secret)
                         .is_answered(answer != null)
-                        .content(visible ? rs.getString("content") : null)
+                        .content(visible ? rs.getString("content") : "접근 권한이 없습니다.")
                         .answer(visible ? answer : null)
                         .build();
         }, productId, (page - 1L) * 10);
