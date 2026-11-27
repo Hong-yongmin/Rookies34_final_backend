@@ -3,7 +3,11 @@ package com.shop.backend.product.service;
 import com.shop.backend.product.dto.*;
 import com.shop.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,6 +16,14 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository repository;
+
+    @Transactional(readOnly = true)
+    public Page<ProductSummaryResponse> getFrequentlyPurchasedProducts(String userId, Pageable page) {
+        long total = repository.countPurchasedProducts(userId);
+        List<ProductSummaryResponse> products = repository.getFrequentlyPurchasedProducts(
+                userId, page.getPageSize(), page.getOffset());
+        return new PageImpl<>(products, page, total);
+    }
 
     // 목록 조회 (U-20)
     public List<ProductSummaryResponse> getList(ListType listType, Long categoryId, ProductSort sort, int page) {

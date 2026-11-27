@@ -8,7 +8,9 @@ import com.shop.backend.productinquiry.dto.ProductInquiryRequest;
 import com.shop.backend.productinquiry.dto.ProductInquiryResponse;
 import com.shop.backend.productinquiry.service.ProductInquiryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,17 +43,18 @@ public class ProductInquiryController {
     // 상품 문의 목록 조회 (U-26)  — 권한: 비로그인 가능
     // GET /api/products/{productId}/inquiries?page=1
     @GetMapping("/api/products/{productId}/inquiries")
-    public Map<String, Object> list(
-            @PathVariable Long productId,
+    public ResponseEntity<Map<String, Object>> list(
+            @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
+            @PathVariable("productId") Long productId,
             @RequestParam(defaultValue = "1") int page) {
 
-        List<ProductInquiryResponse> inquiries = service.getList(productId, page);
+        List<ProductInquiryResponse> inquiries = service.getList(productId, page, id);
 
-        return Map.of(
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(Map.of(
                 "code", "ok",
                 "num", inquiries.size(),
                 "inquiries", inquiries
-        );
+        ));
     }
 
     // 내 문의 내역 조회 (U-53)  — 권한: 로그인
@@ -79,13 +82,13 @@ public class ProductInquiryController {
     @GetMapping("/api/me/product-inquiries/{inquiryId}")
     public Map<String, Object> myInquiryDetail(
             @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
-            @PathVariable Long inquiryId) {
+            @PathVariable("inquiryId") Long inquiryId) {
 
         if (!userChecker.isUser(id)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
         }
 
-        MyInquiryDetailResponse inquiry = service.getDetail(inquiryId);
+        MyInquiryDetailResponse inquiry = service.getDetail(inquiryId, id);
 
         return Map.of(
                 "code", "ok",
