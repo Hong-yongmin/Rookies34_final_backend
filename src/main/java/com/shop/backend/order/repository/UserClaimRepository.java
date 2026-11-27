@@ -1,5 +1,6 @@
 package com.shop.backend.order.repository;
 
+import com.shop.backend.order.dto.Claim;
 import com.shop.backend.order.dto.ClaimRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,8 +37,14 @@ public class UserClaimRepository {
         return keyHolder.getKey().intValue(); //claim_id 반환
     }
 
+    public String getStatus(Integer order_id){
+        // 취소/환불/교환 신청 주문 상품 상태 확인
+        return jdbcTemplate.queryForObject("SELECT status FROM order_item WHERE order_d=%d".formatted(order_id),
+                String.class);
+    }
+
     public String getPaymentMethod(Integer order_id){
-        return jdbcTemplate.queryForObject("SELECT payment_method FROM orders WHERE order_id='%s'".formatted(order_id),
+        return jdbcTemplate.queryForObject("SELECT payment_method FROM orders WHERE order_id=%d".formatted(order_id),
                 String.class);
     }
 
@@ -81,5 +88,25 @@ public class UserClaimRepository {
         String sql = ("INSERT INTO claim_image (claim_id, url)"
                     + "VALUES (%d, '%s')").formatted(claim_id, file_path);
         return jdbcTemplate.update(sql) > 0;
+    }
+
+    public List<Claim> getClaims(String user_id, Integer page){
+        /*
+         * 취소/반품/교환 내역 조회
+         */
+        String sql = "SELECT * FROM claim WHERE user_id='%s'".formatted(user_id);
+        if(page != null && page > 0){
+            sql += " LIMIT 10 OFFSET %d".formatted((page-1)*10);
+        }
+
+        return jdbcTemplate.query(sql,
+                (rs, i)->Claim.builder()
+                        .claim_id(rs.getInt("claim_id"))
+                        .order_id(rs.getInt("order_id"))
+                        .request_type(rs.getString("request_type"))
+                        .reason_type(rs.getString("reason_type"))
+                        .status(rs.getString("status"))
+                        .created_at(rs.getString("created_at"))
+                        .build());
     }
 }

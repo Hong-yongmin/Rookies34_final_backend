@@ -17,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserClaimService userClaimService;
     private final UserChecker userChecker;
 
     @PostMapping("/checkout")
@@ -68,16 +67,5 @@ public class OrderController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
         }
         return ResponseEntity.status(HttpStatus.OK).body(orderService.getOrderDetail(id, order_id));
-    }
-
-    @PostMapping("/{orderId}/claims")
-    public ResponseEntity<DefaultResponse> requestClaim(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
-            @PathVariable("orderId") Integer order_id,
-            @RequestBody ClaimRequest req){
-        if (!userChecker.isUser(id)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
-        }
-        return ResponseEntity.ok(userClaimService.requestClaim(req, order_id, id));
     }
 }

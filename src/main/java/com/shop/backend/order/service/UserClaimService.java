@@ -1,7 +1,9 @@
 package com.shop.backend.order.service;
 
 import com.shop.backend.global.common.FileUploader;
+import com.shop.backend.order.dto.Claim;
 import com.shop.backend.order.dto.ClaimRequest;
+import com.shop.backend.order.dto.ClaimResponse;
 import com.shop.backend.order.dto.DefaultResponse;
 import com.shop.backend.order.repository.UserClaimRepository;
 import jakarta.transaction.Transactional;
@@ -51,5 +53,14 @@ public class UserClaimService {
             }
         }
         return ok();
+    }
+
+    public ClaimResponse getClaims(String user_id, Integer page){
+        List<Claim> result = userClaimRepository.getClaims(user_id, page);
+        return ClaimResponse.builder()
+                .code("ok")
+                .num(result.size())
+                .claims(result)
+                .build();
     }
 }
