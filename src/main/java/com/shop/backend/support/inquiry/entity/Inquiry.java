@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "cs_inquiry")
 public class Inquiry {
 
+    public static final int MAX_TEXT_LENGTH = 1000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer inquiry_id;
@@ -29,13 +31,13 @@ public class Inquiry {
     @Column(nullable = false, length = 50)
     private String title;
 
-    @Column(nullable = false, length = 2000)
+    @Column(nullable = false, length = MAX_TEXT_LENGTH)
     private String content;
 
     @Column(length = 2048)
     private String attachment_url;
 
-    @Column(length = 2000)
+    @Column(length = MAX_TEXT_LENGTH)
     private String answer;
 
     private LocalDateTime answered_at;

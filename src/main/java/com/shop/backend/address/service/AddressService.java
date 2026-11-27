@@ -4,36 +4,32 @@ import com.shop.backend.address.dto.*;
 import com.shop.backend.address.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AddressService {
     private final AddressRepository addressRepository;
 
-    // 추가
-    public AddressResponse addAddress(AddressCreateRequest req, String id) {
-        boolean success = addressRepository.addAddress(req, id);
-        return AddressResponse.builder().code(success ? "ok" : "no").build();
+    public List<Map<String, Object>> getMyAddresses(String userId) {
+        return addressRepository.findMyAddresses(userId);
     }
 
-    // 수정
-    public AddressResponse updateAddress(String userId, Integer addressId, AddressUpdateRequest req) {
-        boolean success = addressRepository.updateAddress(userId, addressId, req);
-        return AddressResponse.builder().code(success ? "ok" : "no").build();
+    @Transactional
+    public Boolean addAddress(String userId, AddressCreateRequest req) {
+        if (Boolean.TRUE.equals(req.getIs_default())) addressRepository.clearDefault(userId);
+        return addressRepository.addAddress(userId, req);
     }
 
-    // 삭제
-    public AddressResponse deleteAddress(String userId, Integer addressId) {
-        boolean success = addressRepository.deleteAddress(userId, addressId);
-        return AddressResponse.builder().code(success ? "ok" : "no").build();
+    @Transactional
+    public Boolean updateAddress(String userId, Integer addressId, AddressUpdateRequest req) {
+        if (Boolean.TRUE.equals(req.getIs_default())) addressRepository.clearDefault(userId);
+        return addressRepository.updateAddress(addressId, req);
     }
 
-    // 조회
-    public AddressesResponse getAddresses(String id){
-        return AddressesResponse.builder()
-                .code("ok")
-                .addresses(addressRepository.getAddresses(id))
-                .build();
+    public Boolean deleteAddress(Integer addressId) {
+        return addressRepository.deleteAddress(addressId);
     }
-
-}
+} 

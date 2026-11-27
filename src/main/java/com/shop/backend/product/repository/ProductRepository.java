@@ -62,7 +62,7 @@ public class ProductRepository {
         String sql = """
                 SELECT p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail_url
                 """ + PURCHASED_PRODUCTS + """
-                GROUP BY p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail_url
+                GROUP BY p.product_id
                 ORDER BY COUNT(DISTINCT o.order_id) DESC, MAX(o.ordered_at) DESC, p.product_id ASC
                 LIMIT ? OFFSET ?
                 """;

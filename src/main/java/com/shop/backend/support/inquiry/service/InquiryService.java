@@ -1,6 +1,7 @@
 
 package com.shop.backend.support.inquiry.service;
 
+import com.shop.backend.support.inquiry.dto.AdminInquiryListResponseDto;
 import com.shop.backend.support.inquiry.dto.InquiryAnswerRequestDto;
 import com.shop.backend.support.inquiry.dto.InquiryCreateRequestDto;
 import com.shop.backend.support.inquiry.dto.InquiryResponseDto;
@@ -35,6 +36,16 @@ public class InquiryService {
     private final InquiryAttachmentLinkService attachmentLinkService;
     private final OrderRepository orderRepository;
 
+    @Transactional(readOnly = true)
+    public AdminInquiryListResponseDto getAdminInquiries(int pageIndex) {
+        var page = inquiryRepository.findAllForAdmin(PageRequest.of(pageIndex, 10));
+        return new AdminInquiryListResponseDto(
+                "ok",
+                page.getTotalElements(),
+                page.map(AdminInquiryListResponseDto.Item::new).getContent()
+        );
+    }
+
     // 1:1 문의 작성
     @Transactional
     public InquiryResponseDto createInquiry(
@@ -51,8 +62,10 @@ public class InquiryService {
             throw new IllegalArgumentException("제목은 최대 50자까지 입력할 수 있습니다.");
         }
 
-        if (request.getContent().length() > 2000) {
-            throw new IllegalArgumentException("내용은 최대 2000자까지 입력할 수 있습니다.");
+        if (request.getContent().length() > Inquiry.MAX_TEXT_LENGTH) {
+            throw new IllegalArgumentException(
+                    "내용은 최대 " + Inquiry.MAX_TEXT_LENGTH + "자까지 입력할 수 있습니다."
+            );
         }
 
         // 문의 유형 검사
@@ -220,9 +233,9 @@ public class InquiryService {
             );
         }
 
-        if (request.getAnswer().length() > 2000) {
+        if (request.getAnswer().length() > Inquiry.MAX_TEXT_LENGTH) {
             throw new IllegalArgumentException(
-                    "답변은 최대 2000자까지 입력할 수 있습니다."
+                    "답변은 최대 " + Inquiry.MAX_TEXT_LENGTH + "자까지 입력할 수 있습니다."
             );
         }
 
