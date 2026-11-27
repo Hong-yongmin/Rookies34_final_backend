@@ -100,7 +100,7 @@ public class AuthController {
             @RequestBody AuthRequest req
     ){
         if(Objects.equals(req.getNew_password(), req.getNew_password_confirm())
-                && jwtUtil.extractClaims(req.getReset_token()) != null) {
+                && jwtUtil.extractClaims(req.getReset_token()) == null) {
             return ResponseEntity.ok(authService.resetPassword(jwtUtil.extractClaims(req.getReset_token()), req.getNew_password()));
         }
         else throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰 또는 패스워드 확인 실패");

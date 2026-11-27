@@ -71,16 +71,21 @@ public class ProductRepository {
 
     // 카테고리별 목록 (U-20)
     public List<ProductSummaryResponse> getListByCategory(Long categoryId, ProductSort sort, int page) {
-        // 전체 카테고리는 자신을 부모로 참조한다.
-        String categoryFilter = categoryId == null || categoryId == 0
-                ? ""
-                : ("AND (category_id = %1$d OR EXISTS (SELECT 1 FROM category c "
-                        + "WHERE c.category_id = %1$d AND c.parent_id = c.category_id)) ")
-                        .formatted(categoryId);
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
                 + "FROM product WHERE status='APPROVED' %s%s LIMIT 20 OFFSET %d")
-                .formatted(categoryFilter, orderBy(sort), (page - 1) * 20);
+                .formatted(categoryFilter(categoryId), orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
+    }
+
+    // 카테고리 조건 — 목록(getListByCategory)과 개수(countByCategory)에서 같이 사용
+    // categoryId가 없거나 0이면 조건 없음(전체). 전체 카테고리는 자신을 부모로 참조한다.
+    private String categoryFilter(Long categoryId) {
+        if (categoryId == null || categoryId == 0) {
+            return "";
+        }
+        return ("AND (category_id = %1$d OR EXISTS (SELECT 1 FROM category c "
+                + "WHERE c.category_id = %1$d AND c.parent_id = c.category_id)) ")
+                .formatted(categoryId);
     }
 
     // 큐레이션별 목록 (U-20) — curation enum
@@ -101,8 +106,8 @@ public class ProductRepository {
 
     // 전체 개수 (페이지네이션용) — 목록/검색과 같은 WHERE, LIMIT 없음
     public int countByCategory(Long categoryId) {
-        String sql = "SELECT COUNT(*) FROM product WHERE category_id=%d AND status='APPROVED'"
-                .formatted(categoryId);
+        String sql = "SELECT COUNT(*) FROM product WHERE status='APPROVED' %s"
+                .formatted(categoryFilter(categoryId));
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
