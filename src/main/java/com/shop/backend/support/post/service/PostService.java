@@ -3,6 +3,7 @@ package com.shop.backend.support.post.service;
 
 import com.shop.backend.support.post.dto.PostCreateRequestDto;
 import com.shop.backend.support.post.dto.PostResponseDto;
+import com.shop.backend.support.post.dto.NoticeDetailResponseDto;
 import com.shop.backend.support.post.dto.NoticeListItemDto;
 import com.shop.backend.support.post.dto.NoticeListResponseDto;
 import com.shop.backend.support.post.dto.FaqListItemDto;
@@ -103,7 +104,7 @@ public class PostService {
 
     // 공지사항 상세 조회
     @Transactional(readOnly = true)
-    public PostResponseDto getNoticeDetail(Integer noticeId) {
+    public NoticeDetailResponseDto getNoticeDetail(Integer noticeId) {
 
         Post post = postRepository.findById(noticeId)
                 .orElseThrow(() ->
@@ -118,15 +119,7 @@ public class PostService {
             );
         }
 
-        return new PostResponseDto(
-                post.getPost_id(),
-                post.getBoard_type(),
-                post.getFaq_category(),
-                post.getTitle(),
-                post.getContent(),
-                post.getIs_pinned(),
-                post.getCreated_at()
-        );
+        return new NoticeDetailResponseDto(post);
     }
 
     // 공지사항 및 FAQ 작성
