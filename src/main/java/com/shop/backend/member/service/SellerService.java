@@ -69,12 +69,15 @@ public class SellerService {
     public SellerInfoResponse getSellerInfo(String id){
         SellerInfo info = sellerRepository.getSellerInfo(id);
         // DB의 파일 경로로 다운로드 API 주소 생성 (경로에 '/' 등이 있으므로 URL 인코딩)
-        info.setCert_download_url("/api/seller/cert-file?path="
-                + URLEncoder.encode(info.getCert_file_url(), StandardCharsets.UTF_8));
+        String certPath = info.getCert_file_url();
+        if (!isBlank(certPath)) {
+            info.setCert_download_url("/api/seller/cert-file?path="
+                    + URLEncoder.encode(certPath, StandardCharsets.UTF_8).replace("+", "%20"));
+        }
 
         return SellerInfoResponse.builder()
                 .code("ok")
-                .sellerInfo(sellerRepository.getSellerInfo(id))
+                .sellerInfo(info)
                 .build();
     }
 
