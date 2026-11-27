@@ -1,12 +1,17 @@
 package com.shop.backend.seller.product.service;
 
+import com.shop.backend.product.dto.ProductDetailResponse;
+import com.shop.backend.product.repository.ProductRepository;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
 import com.shop.backend.seller.product.dto.SellerProductResponse;
 import com.shop.backend.seller.product.repository.SellerProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SellerProductService {
     private final SellerProductRepository sellerProductRepository;
+    private final ProductRepository productRepository;
 
     // 상품 이미지 저장 절대경로 (properties 없으면 기본값 사용)
     @Value("${file.product-upload-dir:/var/shop/uploads/products}")
@@ -27,6 +33,16 @@ public class SellerProductService {
     // 내 상품 목록 조회 (S-11)
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
         return sellerProductRepository.getMyProducts(sellerId, status, keyword, page);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductDetailResponse getDetail(Long productId, String sellerId) {
+        ProductDetailResponse detail = productRepository.getSellerDetail(productId, sellerId);
+        if (detail == null) {
+            throw productNotFound();
+        }
+        detail.setDetail_images(productRepository.getDetailImages(productId));
+        return detail;
     }
 
     // 상품 등록 (S-02)
@@ -45,9 +61,13 @@ public class SellerProductService {
     }
 
     // 상품 수정 (S-02)
+    @Transactional
     public void update(Long productId, SellerProductRequest req, String sellerId) {
+        if (!sellerProductRepository.lockEditableProduct(productId, sellerId)) {
+            throw productNotFound();
+        }
         String thumbnailUrl = saveFile(req.getThumbnail());   // 새 파일 없으면 null
-        sellerProductRepository.updateProduct(productId, req, thumbnailUrl);
+        sellerProductRepository.updateProduct(productId, sellerId, req, thumbnailUrl);
 
         // 상세 이미지가 새로 오면 교체
         List<String> detailPaths = saveDetailImages(req.getDetail_images());
@@ -86,7 +106,13 @@ public class SellerProductService {
     }
 
     // 상품 삭제
-    public Boolean deleteProduct(Integer product_id){
-        return sellerProductRepository.deleteProduct(product_id);
+    public void deleteProduct(Long productId, String sellerId) {
+        if (!sellerProductRepository.withdrawProduct(productId, sellerId)) {
+            throw productNotFound();
+        }
+    }
+
+    private ResponseStatusException productNotFound() {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다.");
     }
 }

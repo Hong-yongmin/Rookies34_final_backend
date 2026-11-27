@@ -24,7 +24,7 @@ public class SellerProductRepository {
         String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
 
         String sql = ("INSERT INTO product (seller_id, category_id, name, price, discount_rate, stock, "
-                + "storage_type, origin, description, thumbnail, status) "
+                + "storage_type, origin, description, thumbnail_url, status) "
                 + "VALUES ('%s', %d, '%s', %d, %d, %d, '%s', %s, %s, '%s', 'PENDING')").formatted(
                 sellerId, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
                 storageType, cf.q(req.getOrigin()), cf.q(req.getDescription()), thumbnailUrl);
@@ -46,22 +46,25 @@ public class SellerProductRepository {
         }
     }
 
+    public boolean lockEditableProduct(Long productId, String sellerId) {
+        return !jdbcTemplate.queryForList("""
+                SELECT product_id FROM product
+                WHERE product_id = ? AND seller_id = ? AND status <> 'WITHDRAWN'
+                FOR UPDATE
+                """, Long.class, productId, sellerId).isEmpty();
+    }
+
     // 상품 수정 (S-02)
-    public Boolean updateProduct(Long productId, SellerProductRequest req, String thumbnailUrl) {
+    public void updateProduct(Long productId, String sellerId, SellerProductRequest req, String thumbnailUrl) {
         int discountRate = (req.getDiscount_rate() != null) ? req.getDiscount_rate() : 0;
         String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
 
-        String sql = ("UPDATE product SET category_id=%d, name='%s', price=%d, discount_rate=%d, stock=%d, "
-                + "storage_type='%s', origin=%s, description=%s").formatted(
-                req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
-                storageType, cf.q(req.getOrigin()), cf.q(req.getDescription()));
-        if (thumbnailUrl != null) {   // 새 썸네일이 있을 때만 교체
-            sql += ", thumbnail='%s'".formatted(thumbnailUrl);
-        }
-        sql += " WHERE product_id=%d".formatted(productId);
-
-        int rows = jdbcTemplate.update(sql);
-        return rows > 0;
+        jdbcTemplate.update("""
+                UPDATE product SET category_id = ?, name = ?, price = ?, discount_rate = ?, stock = ?,
+                    storage_type = ?, origin = ?, description = ?, thumbnail_url = COALESCE(?, thumbnail_url)
+                WHERE product_id = ? AND seller_id = ?
+                """, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
+                storageType, req.getOrigin(), req.getDescription(), thumbnailUrl, productId, sellerId);
     }
 
     // 수정 시 기존 이미지 삭제 (S-02)
@@ -71,15 +74,22 @@ public class SellerProductRepository {
 
     // 내 상품 목록 (S-11)
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
-        String sql = ("SELECT product_id, name, price, discount_rate, stock, status, thumbnail, created_at "
-                + "FROM product WHERE seller_id='%s' ").formatted(sellerId);
-        if (status != null) {
-            sql += "AND status='%s' ".formatted(status);
+        var args = new java.util.ArrayList<>();
+        args.add(sellerId);
+        String sql = "SELECT product_id, name, price, discount_rate, stock, status, thumbnail_url, created_at "
+                + "FROM product WHERE seller_id = ? ";
+        if (status == null || status.isBlank()) {
+            sql += "AND status <> 'WITHDRAWN' ";
+        } else {
+            sql += "AND status = ? ";
+            args.add(status);
         }
         if (keyword != null) {
-            sql += "AND name LIKE '%%%s%%' ".formatted(keyword);
+            sql += "AND name LIKE ? ";
+            args.add("%" + keyword + "%");
         }
-        sql += "ORDER BY created_at DESC LIMIT 20 OFFSET %d".formatted((page - 1) * 20);
+        sql += "ORDER BY created_at DESC LIMIT 20 OFFSET ?";
+        args.add((Math.max(1, page) - 1L) * 20);
 
         return jdbcTemplate.query(sql, (rs, i) ->
                 SellerProductResponse.builder()
@@ -89,13 +99,15 @@ public class SellerProductRepository {
                         .discount_rate(rs.getInt("discount_rate"))
                         .stock(rs.getInt("stock"))
                         .status(rs.getString("status"))
-                        .thumbnail(rs.getString("thumbnail"))
+                        .thumbnail(rs.getString("thumbnail_url"))
                         .created_at(rs.getString("created_at"))
-                        .build());
+                        .build(), args.toArray());
     }
 
     // 상품 삭제
-    public Boolean deleteProduct(Integer product_id){
-        return jdbcTemplate.update("DELETE FROM product WHERE product_id=%d".formatted(product_id)) > 0;
+    public boolean withdrawProduct(Long productId, String sellerId) {
+        return jdbcTemplate.update("""
+                UPDATE product SET status = 'WITHDRAWN' WHERE product_id = ? AND seller_id = ?
+                """, productId, sellerId) > 0;
     }
 }

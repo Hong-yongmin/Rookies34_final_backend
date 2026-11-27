@@ -25,7 +25,8 @@ public class CartRepositroy {
 
     public Boolean existsProduct(Integer productId) {
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM product WHERE product_id=" + productId, Integer.class) > 0;
+                "SELECT COUNT(*) FROM product WHERE product_id = ? AND status = 'APPROVED'",
+                Integer.class, productId) > 0;
     }
 
     public Boolean addItem(Integer cartId, Integer productId, Integer quantity) {
@@ -35,7 +36,7 @@ public class CartRepositroy {
 
     public List<CartResponse.item> findItems(String userId) {
         return jdbcTemplate.query("SELECT ci.cart_item_id, ci.product_id, ci.quantity,"
-                        + " p.name, p.price, p.discount_rate, p.thumbnail AS thumbnail"
+                        + " p.name, p.price, p.discount_rate, p.thumbnail_url AS thumbnail"
                         + " FROM cart c"
                         + " JOIN cart_item ci ON c.cart_id = ci.cart_id"
                         + " JOIN product p ON ci.product_id = p.product_id"

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -68,7 +70,7 @@ public class ProductService {
     public DetailResponse getDetail(Long productId) {
         ProductDetailResponse detail = repository.getDetail(productId);
         if (detail == null) {
-            throw new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다.");
         }
         detail.setDetail_images(repository.getDetailImages(productId));   // 상세 이미지 별도 조회
         return DetailResponse.builder().code("ok").detail(detail).build();

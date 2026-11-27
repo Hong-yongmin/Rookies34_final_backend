@@ -2,12 +2,12 @@ package com.shop.backend.seller.product.controller;
 
 import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.SellerChecker;
+import com.shop.backend.product.dto.DetailResponse;
 import com.shop.backend.seller.product.dto.SellerProductRequest;
 import com.shop.backend.seller.product.dto.SellerProductResponse;
 import com.shop.backend.seller.product.service.SellerProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,6 +41,16 @@ public class SellerProductController {
                 "num", products.size(),
                 "products", products
         );
+    }
+
+    @GetMapping("/{productId}")
+    public DetailResponse detail(
+            @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
+            @PathVariable Long productId) {
+        if (!sellerChecker.isSeller(id)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
+        }
+        return DetailResponse.builder().code("ok").detail(sellerProductService.getDetail(productId, id)).build();
     }
 
     // 상품 등록 (S-02)
@@ -79,14 +89,14 @@ public class SellerProductController {
     @DeleteMapping("/{productId}")
     public Map<String, Object> delete(
             @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
-            @PathVariable Integer productId
+            @PathVariable Long productId
     ){
         // 판매자 권한 확인
         if (!sellerChecker.isSeller(id)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
         }
 
-        Boolean success = sellerProductService.deleteProduct(productId);
-        return Map.of("code", success ? "ok":"no");
+        sellerProductService.deleteProduct(productId, id);
+        return Map.of("code", "ok");
     }
 }

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -57,11 +58,12 @@ class SellerCertificateDownloadTest {
     }
 
     @Test
-    void redirectsToTheSharedSampleWhenItIsHostedByTheWebServer() throws Exception {
+    void returnsTheBundledSampleWhenItIsMissingFromTheUploadDirectory() throws Exception {
         var mvc = createMvc("/dummy-images/cert/sample.png");
         mvc.perform(get("/api/seller/cert-file").requestAttr(JwtAuthenticationFilter.MEMBER_ID, "seller"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/dummy-images/cert/sample.png"));
+                .andExpect(status().isOk())
+                .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
+                .andExpect(content().bytes(new ClassPathResource("seller-certificates/sample.png").getContentAsByteArray()));
     }
 
     private org.springframework.test.web.servlet.MockMvc createMvc(String path) {
