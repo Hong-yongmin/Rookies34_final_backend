@@ -274,6 +274,7 @@ public class OrderRepository {
         List<OrderDetailResponse> list = jdbcTemplate.query(sql,
                 (rs, i) -> OrderDetailResponse.builder()
                         .order_id(rs.getLong("order_id"))
+                        .status(rs.getString("status"))
                         .ordered_at(rs.getString("ordered_at"))
                         .payment_method(rs.getString("payment_method"))
                         .total_amount(rs.getInt("total_amount"))

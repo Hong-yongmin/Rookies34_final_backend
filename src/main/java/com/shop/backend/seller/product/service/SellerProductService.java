@@ -84,4 +84,9 @@ public class SellerProductService {
             throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
         }
     }
+
+    // 상품 삭제
+    public Boolean deleteProduct(Integer product_id){
+        return sellerProductRepository.deleteProduct(product_id);
+    }
 }

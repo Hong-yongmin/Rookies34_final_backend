@@ -93,4 +93,9 @@ public class SellerProductRepository {
                         .created_at(rs.getString("created_at"))
                         .build());
     }
+
+    // 상품 삭제
+    public Boolean deleteProduct(Integer product_id){
+        return jdbcTemplate.update("DELETE FROM product WHERE product_id=%d".formatted(product_id)) > 0;
+    }
 }

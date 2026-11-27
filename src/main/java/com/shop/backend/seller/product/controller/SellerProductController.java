@@ -7,6 +7,7 @@ import com.shop.backend.seller.product.dto.SellerProductResponse;
 import com.shop.backend.seller.product.service.SellerProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -72,5 +73,20 @@ public class SellerProductController {
 
         sellerProductService.update(productId, req, id);
         return Map.of("code", "ok");
+    }
+
+    // 등록 상품 삭제 (새 API)
+    @DeleteMapping("/{productId}")
+    public Map<String, Object> delete(
+            @RequestAttribute(value = JwtAuthenticationFilter.MEMBER_ID, required = false) String id,
+            @PathVariable Integer productId
+    ){
+        // 판매자 권한 확인
+        if (!sellerChecker.isSeller(id)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
+        }
+
+        Boolean success = sellerProductService.deleteProduct(productId);
+        return Map.of("code", success ? "ok":"no");
     }
 }

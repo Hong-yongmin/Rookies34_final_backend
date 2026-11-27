@@ -12,6 +12,7 @@ import java.util.List;
 public class OrderDetailResponse { // GET /api/orders/{orderId}
     private String code;
     private Long order_id;
+    private String status;
     private String ordered_at;
     private String payment_method;
     private int total_amount;

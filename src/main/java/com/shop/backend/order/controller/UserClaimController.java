@@ -20,7 +20,7 @@ public class UserClaimController {
     private final UserChecker userChecker;
     private final UserClaimService userClaimService;
 
-    @PostMapping("/orders/{orderId}/claims")    // multipart/form-data로 수신 (photo_files는 파일)
+    @PostMapping("/orders/{orderId}/claims/{orderItemId}")    // multipart/form-data로 수신 (photo_files는 파일)
     public ResponseEntity<DefaultResponse> requestClaim(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("orderId") Integer order_id,
