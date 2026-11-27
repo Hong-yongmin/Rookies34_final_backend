@@ -49,7 +49,7 @@ public class ProductRepository {
                 .category_id(rs.getLong("category_id"))
                 .price(rs.getInt("price"))
                 .discount_rate(rs.getInt("discount_rate"))
-                .thumbnail(rs.getString("thumbnail_url"))
+                .thumbnail(rs.getString("thumbnail"))
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class ProductRepository {
 
     public List<ProductSummaryResponse> getFrequentlyPurchasedProducts(String userId, int pageSize, long offset) {
         String sql = """
-                SELECT p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail_url
+                SELECT p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail
                 """ + PURCHASED_PRODUCTS + """
                 GROUP BY p.product_id
                 ORDER BY COUNT(DISTINCT o.order_id) DESC, MAX(o.ordered_at) DESC, p.product_id ASC
@@ -77,7 +77,7 @@ public class ProductRepository {
                 : ("AND (category_id = %1$d OR EXISTS (SELECT 1 FROM category c "
                         + "WHERE c.category_id = %1$d AND c.parent_id = c.category_id)) ")
                         .formatted(categoryId);
-        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
+        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail "
                 + "FROM product WHERE status='APPROVED' %s%s LIMIT 20 OFFSET %d")
                 .formatted(categoryFilter, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
@@ -85,7 +85,7 @@ public class ProductRepository {
 
     // 큐레이션별 목록 (U-20) — curation enum
     public List<ProductSummaryResponse> getListByCuration(String curation, ProductSort sort, int page) {
-        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
+        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail "
                 + "FROM product WHERE curation='%s' AND status='APPROVED' %s LIMIT 20 OFFSET %d")
                 .formatted(curation, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
@@ -93,16 +93,35 @@ public class ProductRepository {
 
     // 검색 (U-21) — 상품명 LIKE
     public List<ProductSummaryResponse> search(String keyword, ProductSort sort, int page) {
-        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
+        String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail "
                 + "FROM product WHERE name LIKE '%%%s%%' AND status='APPROVED' %s LIMIT 20 OFFSET %d")
                 .formatted(keyword, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
     }
 
+    // 전체 개수 (페이지네이션용) — 목록/검색과 같은 WHERE, LIMIT 없음
+    public int countByCategory(Long categoryId) {
+        String sql = "SELECT COUNT(*) FROM product WHERE category_id=%d AND status='APPROVED'"
+                .formatted(categoryId);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public int countByCuration(String curation) {
+        String sql = "SELECT COUNT(*) FROM product WHERE curation='%s' AND status='APPROVED'"
+                .formatted(curation);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public int countBySearch(String keyword) {
+        String sql = "SELECT COUNT(*) FROM product WHERE name LIKE '%%%s%%' AND status='APPROVED'"
+                .formatted(keyword);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
     // 상세 (U-22) — 없으면 null
     public ProductDetailResponse getDetail(Long productId) {
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, stock, "
-                + "storage_type, origin, description, thumbnail_url "
+                + "storage_type, origin, description, thumbnail "
                 + "FROM product WHERE product_id=%d").formatted(productId);   // ⚠️ status 필터 없음 → 승인 안 된 상품도 열람 (IDOR 진단 포인트)
         List<ProductDetailResponse> list = jdbcTemplate.query(sql, (rs, i) ->
                 ProductDetailResponse.builder()
@@ -115,7 +134,7 @@ public class ProductRepository {
                         .storage_type(rs.getString("storage_type"))
                         .origin(rs.getString("origin"))
                         .description(rs.getString("description"))
-                        .thumbnail(rs.getString("thumbnail_url"))
+                        .thumbnail(rs.getString("thumbnail"))
                         .build());
         return list.isEmpty() ? null : list.get(0);
     }
@@ -136,7 +155,7 @@ public class ProductRepository {
     // 관리자 상품 상세 — status 필터 없음(승인 전도 조회), seller_id/status 포함. 없으면 null
     public AdminProductDetailResponse getDetailForAdmin(Long productId) {
         String sql = ("SELECT product_id, seller_id, status, category_id, name, price, discount_rate, "
-                + "stock, storage_type, origin, description, thumbnail_url, created_at "
+                + "stock, storage_type, origin, description, thumbnail, created_at "
                 + "FROM product WHERE product_id=%d").formatted(productId);
         List<AdminProductDetailResponse> list = jdbcTemplate.query(sql, (rs, i) ->
                 AdminProductDetailResponse.builder()
@@ -151,7 +170,7 @@ public class ProductRepository {
                         .storage_type(rs.getString("storage_type"))
                         .origin(rs.getString("origin"))
                         .description(rs.getString("description"))
-                        .thumbnail(rs.getString("thumbnail_url"))
+                        .thumbnail(rs.getString("thumbnail"))
                         .created_at(rs.getString("created_at"))
                         .build());
         return list.isEmpty() ? null : list.get(0);

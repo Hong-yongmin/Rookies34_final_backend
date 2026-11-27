@@ -28,7 +28,7 @@ public class CartResponse {
         private Integer price;
         private Integer discount_rate;
         private Integer sale_price;
-        private String thumbnail_url;
+        private String thumbnail;
     }
 
 }

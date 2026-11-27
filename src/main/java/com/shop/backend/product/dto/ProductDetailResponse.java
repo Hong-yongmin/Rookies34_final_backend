@@ -20,6 +20,6 @@ public class ProductDetailResponse {
     private String storage_type;
     private String origin;
     private String description;
-    private String thumbnail;              // DB thumbnail_url → 응답 thumbnail
+    private String thumbnail;              // DB thumbnail → 응답 thumbnail
     private List<String> detail_images;    // product_image 테이블에서 별도 조회
 }
