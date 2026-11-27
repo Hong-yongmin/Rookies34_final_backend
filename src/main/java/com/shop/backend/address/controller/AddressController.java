@@ -20,14 +20,14 @@ public class AddressController {
     @GetMapping
     public Object getMyAddresses(@RequestAttribute(name = "memberid", required = false) String userId) {
         if (!userChecker.isUser(userId)) return NO;
-        return addressService.getAddresses(userId);
+        return addressService.getMyAddresses(userId);
     }
 
     @PostMapping
     public Map<String, String> addAddress(@RequestAttribute(name = "memberid", required = false) String userId,
                                           @RequestBody AddressCreateRequest req) {
         if (!userChecker.isUser(userId)) return NO;
-        if ("ok".equals(addressService.addAddress(req, userId).getCode())) return OK;
+        if ("ok".equals(addressService.addAddress(userId, req))) return OK;
         return NO;
     }
 
@@ -35,7 +35,7 @@ public class AddressController {
     public Map<String, String> updateAddress(@RequestAttribute(name = "memberid", required = false) String userId,
                                              @PathVariable("addressId") Integer addressId, @RequestBody AddressUpdateRequest req) {
         if (!userChecker.isUser(userId)) return NO;
-        if ("ok".equals(addressService.updateAddress(userId, addressId, req).getCode())) return OK;
+        if ("ok".equals(addressService.updateAddress(userId, addressId, req))) return OK;
         return NO;
     }
 
@@ -43,7 +43,7 @@ public class AddressController {
     public Map<String, String> deleteAddress(@RequestAttribute(name = "memberid", required = false) String userId,
                                              @PathVariable("addressId") Integer addressId) {
         if (!userChecker.isUser(userId)) return NO;
-        if ("ok".equals(addressService.deleteAddress(userId, addressId).getCode())) return OK;
+        if ("ok".equals(addressService.deleteAddress(addressId))) return OK;
         return NO;
     }
 }

@@ -57,14 +57,14 @@ public class UserRepository {
             return false;
         }
 
-        return addressRepository.addAddress(AddressCreateRequest.builder()// 주소는 별도 추가
+        return addressRepository.addAddress(req.getLogin_id(), AddressCreateRequest.builder()// 주소는 별도 추가
                         .recipient_name(req.getName())
                         .recipient_phone(req.getPhone())
                         .zipcode(req.getZipcode())
                         .address(req.getAddress())
                         .address_detail(req.getAddress_detail())
                         .is_default(false)                                  // 회원가입 시 등록 주소는 default X
-                        .build(), req.getLogin_id());
+                        .build());
     }
 
     public Boolean changeUserPassword(String id, String password){
