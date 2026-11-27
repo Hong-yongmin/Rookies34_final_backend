@@ -35,7 +35,7 @@ public class CartRepositroy {
 
     public List<CartResponse.item> findItems(String userId) {
         return jdbcTemplate.query("SELECT ci.cart_item_id, ci.product_id, ci.quantity,"
-                        + " p.name, p.price, p.discount_rate, p.thumbnail"
+                        + " p.name, p.price, p.discount_rate, p.thumbnail_url"
                         + " FROM cart c"
                         + " JOIN cart_item ci ON c.cart_id = ci.cart_id"
                         + " JOIN product p ON ci.product_id = p.product_id"
