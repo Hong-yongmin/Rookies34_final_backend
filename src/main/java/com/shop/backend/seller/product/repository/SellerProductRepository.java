@@ -24,7 +24,7 @@ public class SellerProductRepository {
         String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
 
         String sql = ("INSERT INTO product (seller_id, category_id, name, price, discount_rate, stock, "
-                + "storage_type, origin, description, thumbnail_url, status) "
+                + "storage_type, origin, description, thumbnail, status) "
                 + "VALUES ('%s', %d, '%s', %d, %d, %d, '%s', %s, %s, '%s', 'PENDING')").formatted(
                 sellerId, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
                 storageType, cf.q(req.getOrigin()), cf.q(req.getDescription()), thumbnailUrl);
@@ -56,7 +56,7 @@ public class SellerProductRepository {
                 req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
                 storageType, cf.q(req.getOrigin()), cf.q(req.getDescription()));
         if (thumbnailUrl != null) {   // 새 썸네일이 있을 때만 교체
-            sql += ", thumbnail_url='%s'".formatted(thumbnailUrl);
+            sql += ", thumbnail='%s'".formatted(thumbnailUrl);
         }
         sql += " WHERE product_id=%d".formatted(productId);
 
@@ -71,7 +71,7 @@ public class SellerProductRepository {
 
     // 내 상품 목록 (S-11)
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
-        String sql = ("SELECT product_id, name, price, discount_rate, stock, status, thumbnail_url, created_at "
+        String sql = ("SELECT product_id, name, price, discount_rate, stock, status, thumbnail, created_at "
                 + "FROM product WHERE seller_id='%s' ").formatted(sellerId);
         if (status != null) {
             sql += "AND status='%s' ".formatted(status);
@@ -89,7 +89,7 @@ public class SellerProductRepository {
                         .discount_rate(rs.getInt("discount_rate"))
                         .stock(rs.getInt("stock"))
                         .status(rs.getString("status"))
-                        .thumbnail_url(rs.getString("thumbnail_url"))
+                        .thumbnail(rs.getString("thumbnail"))
                         .created_at(rs.getString("created_at"))
                         .build());
     }

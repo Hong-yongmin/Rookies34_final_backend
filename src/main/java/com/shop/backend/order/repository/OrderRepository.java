@@ -21,7 +21,7 @@ public class OrderRepository {
         /*
          * 주문할 장바구니 항목 조회 (사용자 본인 장바구니의 항목만)
          */
-        String sql = ("SELECT ci.cart_item_id, p.product_id, p.name, ci.quantity, p.price, p.discount_rate, p.thumbnail_url "
+        String sql = ("SELECT ci.cart_item_id, p.product_id, p.name, ci.quantity, p.price, p.discount_rate, p.thumbnail "
                 + "FROM cart_item ci, cart c, product p "
                 + "WHERE ci.cart_id=c.cart_id AND ci.product_id=p.product_id "
                 + "AND c.user_id='%s' AND ci.cart_item_id IN (%s)").formatted(id, cf.join(cart_item_ids));
@@ -34,7 +34,7 @@ public class OrderRepository {
                         .quantity(rs.getInt("quantity"))
                         .price(rs.getInt("price"))
                         .discount_rate(rs.getInt("discount_rate"))
-                        .thumbnail(rs.getString("thumbnail_url")).build());
+                        .thumbnail(rs.getString("thumbnail")).build());
     }
 
     public List<CheckoutAddress> getAddresses(String id){

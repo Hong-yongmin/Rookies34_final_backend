@@ -14,6 +14,6 @@ public class SellerProductResponse {
     private int discount_rate;
     private int stock;          // 판매자용 — 재고
     private String status;      // 판매자용 — 상태
-    private String thumbnail_url;
+    private String thumbnail;
     private String created_at;  // DB date → 문자열로
 }
