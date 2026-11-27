@@ -30,7 +30,7 @@ public class CartResponse {
         private Integer sale_price;
         private String thumbnail;
 
-        public String getthumbnail() {
+        public String getThumbnail() {
             return thumbnail;
         }
     }
