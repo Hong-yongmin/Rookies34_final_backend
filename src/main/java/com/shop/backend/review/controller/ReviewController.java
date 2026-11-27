@@ -30,13 +30,11 @@ public class ReviewController {
     @GetMapping("/{productId}/reviews")
     // GET /api/products/1/reviews 요청이 들어오면 {productId}에 해당하는 1을 가져옴.
     public ReviewPageResponseDto getReviews(
-            @PathVariable Integer productId,
-            @RequestParam(defaultValue = "0") int page
-            // page라는 Query parameter를 받음
-            // page값을 생략하면 기본값 0
+            @PathVariable("productId") Integer productId,
+            @RequestParam(name = "page", defaultValue = "1") int page
 
     ) {
-        return reviewService.getReviewItems(productId, page);
+        return reviewService.getReviewItems(productId, page > 0 ? page - 1 : page);
         // 조회된 후기 목록 반환
     }
     @PostMapping("/api/reviews")

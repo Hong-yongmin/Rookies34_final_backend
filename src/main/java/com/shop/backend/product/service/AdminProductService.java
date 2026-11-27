@@ -2,6 +2,7 @@ package com.shop.backend.product.service;
 
 import com.shop.backend.product.dto.AdminProductDetailResponse;
 import com.shop.backend.product.dto.AdminProductResponse;
+import com.shop.backend.product.dto.CurationRequest;
 import com.shop.backend.product.dto.ProductDecision;
 import com.shop.backend.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,14 @@ public class AdminProductService {
         }
         detail.setDetail_images(productRepository.getDetailImages(productId));
         return detail;
+    }
+
+    // A-07 큐레이션 지정/해제 — 여러 상품에 curation 설정(또는 null로 해제)
+    public void setCuration(CurationRequest req) {
+        if (req.getProduct_ids() == null || req.getProduct_ids().isEmpty()) {
+            throw new IllegalArgumentException("product_ids가 필요합니다");
+        }
+        productRepository.updateCuration(req.getProduct_ids(), req.getCuration());
     }
 
     // A-05 상품 승인/반려/철회 — decision을 status로 바꿔 UPDATE

@@ -1,7 +1,7 @@
 package com.shop.backend.cart.service;
 
 import com.shop.backend.cart.dto.*;
-import com.shop.backend.cart.repository.CartRepository;
+import com.shop.backend.cart.repository.CartRepositroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -10,22 +10,22 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CartService {
-    private final CartRepository cartRepository;
+    private final CartRepositroy cartRepositroy;
 
     public Boolean addItem(String userId, CartItemsRequest req) {
-        if (req.getProduct_id() == null || !cartRepository.existsProduct(req.getProduct_id())) return false;
+        if (req.getProduct_id() == null || !cartRepositroy.existsProduct(req.getProduct_id())) return false;
 
-        List<Integer> cartId = cartRepository.findCartId(userId);
+        List<Integer> cartId = cartRepositroy.findCartId(userId);
         if (cartId.isEmpty()) {
-            cartRepository.createCart(userId);
-            cartId = cartRepository.findCartId(userId);
+            cartRepositroy.createCart(userId);
+            cartId = cartRepositroy.findCartId(userId);
         }
-        return cartRepository.addItem(cartId.get(0), req.getProduct_id(), req.getQuantity());
+        return cartRepositroy.addItem(cartId.get(0), req.getProduct_id(), req.getQuantity());
     }
 
     public CartResponse getCart(String userId) {
         CartResponse res = new CartResponse();
-        res.setItems(cartRepository.findItems(userId));
+        res.setItems(cartRepositroy.findItems(userId));
         res.setNum(res.getItems().size());
         res.setCode("ok");
 
@@ -41,7 +41,7 @@ public class CartService {
         res.setTotal_discount(totalDiscount);
         res.setFinal_price(totalPrice - totalDiscount);
 
-        List<Map<String, Object>> selected = cartRepository.findSelectedAddress(userId);
+        List<Map<String, Object>> selected = cartRepositroy.findSelectedAddress(userId);
         if (!selected.isEmpty()) {
             Map<String, Object> s = selected.get(0);
             res.setAddress_id((Integer) s.get("address_id"));
@@ -53,15 +53,15 @@ public class CartService {
     }
 
     public Boolean updateQuantity(Integer cartItemId, Integer quantity) {
-        return cartRepository.updateQuantity(cartItemId, quantity);
+        return cartRepositroy.updateQuantity(cartItemId, quantity);
     }
 
     public Boolean deleteItems(List<Integer> cartItemIds) {
-        return cartRepository.deleteItems(cartItemIds);
+        return cartRepositroy.deleteItems(cartItemIds);
     }
 
     public Boolean updateShipping(String userId, CartShippingAddressRequest req) {
-        if (cartRepository.findCartId(userId).isEmpty()) cartRepository.createCart(userId);
-        return cartRepository.updateSelectedAddress(userId, req.getAddress_id());
+        if (cartRepositroy.findCartId(userId).isEmpty()) cartRepositroy.createCart(userId);
+        return cartRepositroy.updateSelectedAddress(userId, req.getAddress_id());
     }
 }

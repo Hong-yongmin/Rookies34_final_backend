@@ -10,6 +10,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewPageResponseDto {
 
+    public String getCode() {
+        return "ok";
+    }
+
+    public long getNum() {
+        return totalElements;
+    }
+
     private final long totalElements;
     private final int totalPages;
     private final int currentPage;
