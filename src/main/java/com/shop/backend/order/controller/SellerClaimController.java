@@ -35,7 +35,7 @@ public class SellerClaimController {
     public Map<String, Object> acceptClaim(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("claimId") Integer claim_id,
-            @ModelAttribute ClaimAcceptRequest req){
+            @RequestBody ClaimAcceptRequest req){
         if(!sellerChecker.isSeller(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "판매자 권한 필요");
         }
