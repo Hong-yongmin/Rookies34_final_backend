@@ -20,15 +20,15 @@ public class UserClaimRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
 
-    public Integer requestClaim(ClaimRequest req, Integer order_id, String user_id){
+    public Integer requestClaim(ClaimRequest req, Integer order_item_id, String user_id){
         /*
          * 취소/환불/반품 신청
-         * 환불은 order_item의 status가 paid일 때 가능, 반품은 COMPLETED일 때 가능
-         * 취소는 현 단계에서 고려X
+         * 취소, 환불은 order_item의 status가 paid일 때 가능, 반품은 COMPLETED일 때 가능
+         *
          */
-        String sql = ("INSERT INTO claim (order_id, user_id, request_type, reason_type, reason_detail, status) "
+        String sql = ("INSERT INTO claim (order_item_id, user_id, request_type, reason_type, reason_detail, status) "
                 + "VALUES (%d, '%s', '%s', '%s', %s, 'REQUESTED')").formatted(
-                order_id, user_id, req.getRequest_type(), req.getReason_type(), cf.q(req.getReason_detail()));   // 상세 사유는 없으면 NULL
+                order_item_id, user_id, req.getRequest_type(), req.getReason_type(), cf.q(req.getReason_detail()));   // 상세 사유는 없으면 NULL
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         int rows = jdbcTemplate.update(
@@ -40,9 +40,9 @@ public class UserClaimRepository {
         return keyHolder.getKey().intValue(); //claim_id 반환
     }
 
-    public String getStatus(Integer order_id){
+    public String getStatus(Integer order_item_id){
         // 취소/환불/교환 신청 주문 상품 상태 확인
-        return jdbcTemplate.queryForObject("SELECT status FROM order_item WHERE order_id=%d".formatted(order_id),
+        return jdbcTemplate.queryForObject("SELECT status FROM order_item WHERE order_item_id=%d".formatted(order_item_id),
                 String.class);
     }
 
@@ -58,30 +58,6 @@ public class UserClaimRepository {
         String sql = ("UPDATE claim SET refund_bank='%s', refund_account_no='%s', refund_account_holder='%s' "
                 + "WHERE claim_id=%d").formatted(refund_bank, refund_account_no, refund_account_holder, claim_id);
         return jdbcTemplate.update(sql) > 0;
-    }
-
-    public List<Integer> getOrderItemIds(Integer order_id){
-        /*
-         * claim_item 추가용 order_item_id 리스트 반환
-         */
-        return jdbcTemplate.query("SELECT order_item_id FROM order_item WHERE order_id=%d".formatted(order_id),
-                (rs, i)-> rs.getInt("order_item_id"));
-    }
-
-    public Boolean addClaimItem(Integer claim_id, Integer order_id){
-        /*
-         * claim 신청 시 order_item 별로 claim_item 추가
-         */
-        List<Integer> order_item_ids = getOrderItemIds(order_id);
-        String sql;
-        for(Integer order_item_id:order_item_ids){
-            sql = ("INSERT INTO claim_item (claim_id, order_item_id, order_id) "
-                    + "VALUES (%d, %d, %d)").formatted(claim_id, order_item_id, order_id);
-            if(jdbcTemplate.update(sql) <= 0){
-                return false;
-            }
-        }
-        return true;
     }
 
     public Boolean addClaimImage(Integer claim_id, String file_path){
@@ -111,5 +87,12 @@ public class UserClaimRepository {
                         .status(rs.getString("status"))
                         .created_at(rs.getString("requested_at"))   // claim 테이블 컬럼명은 requested_at
                         .build());
+    }
+
+    public Boolean updateOrderItemStatus(Integer order_item_id){
+        /*
+         * 주문 취소/환불/교환이 접수된 order_item의 status를 WAITING으로 업데이트
+         */
+        return jdbcTemplate.update("UPDATE order_item SET status='WAITING' WHERE order_item_id=%d".formatted(order_item_id)) > 0;
     }
 }

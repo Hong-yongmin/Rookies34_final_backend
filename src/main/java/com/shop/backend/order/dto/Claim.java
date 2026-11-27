@@ -22,6 +22,7 @@ public class Claim {
     private String reason_detail;
     private String status;
     private List<MultipartFile> photo_files;
+    private List<String> file_paths;
     private String refund_bank;
     private String refund_account_no;
     private String refund_account_holder;
