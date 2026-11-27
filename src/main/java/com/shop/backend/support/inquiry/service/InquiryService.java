@@ -62,8 +62,10 @@ public class InquiryService {
             throw new IllegalArgumentException("제목은 최대 50자까지 입력할 수 있습니다.");
         }
 
-        if (request.getContent().length() > 2000) {
-            throw new IllegalArgumentException("내용은 최대 2000자까지 입력할 수 있습니다.");
+        if (request.getContent().length() > Inquiry.MAX_TEXT_LENGTH) {
+            throw new IllegalArgumentException(
+                    "내용은 최대 " + Inquiry.MAX_TEXT_LENGTH + "자까지 입력할 수 있습니다."
+            );
         }
 
         // 문의 유형 검사
@@ -231,9 +233,9 @@ public class InquiryService {
             );
         }
 
-        if (request.getAnswer().length() > 2000) {
+        if (request.getAnswer().length() > Inquiry.MAX_TEXT_LENGTH) {
             throw new IllegalArgumentException(
-                    "답변은 최대 2000자까지 입력할 수 있습니다."
+                    "답변은 최대 " + Inquiry.MAX_TEXT_LENGTH + "자까지 입력할 수 있습니다."
             );
         }
 
