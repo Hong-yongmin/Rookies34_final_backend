@@ -24,7 +24,7 @@ public class SellerProductRepository {
         String storageType = (req.getStorage_type() != null) ? req.getStorage_type().name() : "ROOM";
 
         String sql = ("INSERT INTO product (seller_id, category_id, name, price, discount_rate, stock, "
-                + "storage_type, origin, description, thumbnail_url, status) "
+                + "storage_type, origin, description, thumbnail, status) "
                 + "VALUES ('%s', %d, '%s', %d, %d, %d, '%s', %s, %s, '%s', 'PENDING')").formatted(
                 sellerId, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
                 storageType, cf.q(req.getOrigin()), cf.q(req.getDescription()), thumbnailUrl);
@@ -61,7 +61,7 @@ public class SellerProductRepository {
 
         jdbcTemplate.update("""
                 UPDATE product SET category_id = ?, name = ?, price = ?, discount_rate = ?, stock = ?,
-                    storage_type = ?, origin = ?, description = ?, thumbnail_url = COALESCE(?, thumbnail_url)
+                    storage_type = ?, origin = ?, description = ?, thumbnail = COALESCE(?, thumbnail)
                 WHERE product_id = ? AND seller_id = ?
                 """, req.getCategory_id(), req.getName(), req.getPrice(), discountRate, req.getStock(),
                 storageType, req.getOrigin(), req.getDescription(), thumbnailUrl, productId, sellerId);
@@ -76,7 +76,7 @@ public class SellerProductRepository {
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
         var args = new java.util.ArrayList<>();
         args.add(sellerId);
-        String sql = "SELECT product_id, name, price, discount_rate, stock, status, thumbnail_url, created_at "
+        String sql = "SELECT product_id, name, price, discount_rate, stock, status, thumbnail, created_at "
                 + "FROM product WHERE seller_id = ? ";
         if (status == null || status.isBlank()) {
             sql += "AND status <> 'WITHDRAWN' ";
@@ -99,7 +99,7 @@ public class SellerProductRepository {
                         .discount_rate(rs.getInt("discount_rate"))
                         .stock(rs.getInt("stock"))
                         .status(rs.getString("status"))
-                        .thumbnail(rs.getString("thumbnail_url"))
+                        .thumbnail(rs.getString("thumbnail"))
                         .created_at(rs.getString("created_at"))
                         .build(), args.toArray());
     }
