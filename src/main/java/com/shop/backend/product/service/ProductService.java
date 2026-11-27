@@ -16,12 +16,8 @@ public class ProductService {
     // 목록 조회 (U-20)
     public List<ProductSummaryResponse> getList(ListType listType, Long categoryId, ProductSort sort, int page) {
         return switch (listType) {
-            case CATEGORY -> {
-                if (categoryId == null) {
-                    throw new IllegalArgumentException("category_id는 CATEGORY 조회 시 필수입니다.");
-                }
-                yield repository.getListByCategory(categoryId, sort, page);
-            }
+            case ALL      -> repository.getListByCategory(null, sort, page);
+            case CATEGORY -> repository.getListByCategory(categoryId, sort, page);
             case BEST    -> repository.getListByCuration("BEST", sort, page);
             case SALE    -> repository.getListByCuration("SALE", sort, page);
             case NEW     -> repository.getListByCuration("NEW_ARRIVAL", sort, page);  // NEW → NEW_ARRIVAL
