@@ -1,6 +1,7 @@
 
 package com.shop.backend.support.inquiry.service;
 
+import com.shop.backend.support.inquiry.dto.AdminInquiryListResponseDto;
 import com.shop.backend.support.inquiry.dto.InquiryAnswerRequestDto;
 import com.shop.backend.support.inquiry.dto.InquiryCreateRequestDto;
 import com.shop.backend.support.inquiry.dto.InquiryResponseDto;
@@ -34,6 +35,16 @@ public class InquiryService {
     private final InquiryFileService inquiryFileService;
     private final InquiryAttachmentLinkService attachmentLinkService;
     private final OrderRepository orderRepository;
+
+    @Transactional(readOnly = true)
+    public AdminInquiryListResponseDto getAdminInquiries(int pageIndex) {
+        var page = inquiryRepository.findAllForAdmin(PageRequest.of(pageIndex, 10));
+        return new AdminInquiryListResponseDto(
+                "ok",
+                page.getTotalElements(),
+                page.map(AdminInquiryListResponseDto.Item::new).getContent()
+        );
+    }
 
     // 1:1 문의 작성
     @Transactional

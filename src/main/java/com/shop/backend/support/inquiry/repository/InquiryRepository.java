@@ -3,6 +3,8 @@ package com.shop.backend.support.inquiry.repository;
 
 import com.shop.backend.support.inquiry.entity.Inquiry;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,12 @@ import java.util.List;
 
 public interface InquiryRepository
         extends JpaRepository<Inquiry, Integer> {
+
+    @Query(
+            value = "SELECT i FROM Inquiry i ORDER BY i.created_at DESC, i.inquiry_id DESC",
+            countQuery = "SELECT COUNT(i) FROM Inquiry i"
+    )
+    Page<Inquiry> findAllForAdmin(Pageable pageable);
 
     // 특정 사용자의 문의 목록 조회 (최신순, 페이지네이션)
     @Query("""
@@ -21,7 +29,7 @@ public interface InquiryRepository
     """)
     List<Inquiry> findInquiriesByUserId(
             @Param("userId") String userId,
-            org.springframework.data.domain.Pageable pageable
+            Pageable pageable
     );
 
     // 특정 사용자의 전체 문의 개수
