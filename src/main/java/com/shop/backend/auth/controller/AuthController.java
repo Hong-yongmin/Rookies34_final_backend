@@ -95,7 +95,7 @@ public class AuthController {
                 .build());
     }
 
-    @PostMapping("/auth/password-reset")
+    @PutMapping("/auth/password-reset")
     public ResponseEntity<AuthResponse> resetPwd(
             @RequestBody AuthRequest req
     ){
