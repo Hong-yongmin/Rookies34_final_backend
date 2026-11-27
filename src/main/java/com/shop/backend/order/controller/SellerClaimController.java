@@ -31,7 +31,7 @@ public class SellerClaimController {
         return sellerClaimService.getClaims(id, page, status);
     }
 
-    @PostMapping("/{claimId}")
+    @PatchMapping("/{claimId}")
     public Map<String, Object> acceptClaim(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("claimId") Integer claim_id,
