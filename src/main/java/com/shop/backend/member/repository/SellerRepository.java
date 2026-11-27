@@ -63,7 +63,7 @@ public class SellerRepository {
          * 판매자 기본 수수료율 설정 (0.05)
          * 쿼리 실행 성공 시 true 반환
          */
-        String sql = "INSERT INTO commission_rate (seller_id, commission_rate) VALUES (%s, %f)".formatted(id, DEFAULT_RATE);
+        String sql = "INSERT INTO commission_rate (seller_id, commission_rate) VALUES ('%s', %f)".formatted(id, DEFAULT_RATE);
 
         return jdbcTemplate.update(sql) > 0;
     }
