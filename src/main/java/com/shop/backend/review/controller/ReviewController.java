@@ -3,6 +3,7 @@ package com.shop.backend.review.controller;
 
 import com.shop.backend.review.dto.ReviewPageResponseDto;
 import com.shop.backend.review.service.ReviewService;
+import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -66,7 +67,8 @@ public class ReviewController {
     @PostMapping({"/reviews", "/products/api/reviews"})
     public ResponseEntity<Map<String, String>> createReview(
             @RequestHeader("Authorization") String authorization,
-            @ModelAttribute ReviewCreateRequest request
+            @ModelAttribute ReviewCreateRequest request,
+            HttpServletRequest servletRequest
     ) {
         try {
             // 1. Authorization 헤더 확인
@@ -81,7 +83,7 @@ public class ReviewController {
             String userId = jwtUtil.extractClaims(token);
 
             // 4. 후기 작성 처리
-            reviewService.createReviewWithValidation(request, userId);
+            reviewService.createReviewWithValidation(request, userId, servletRequest.getContextPath());
 
             // 5. 성공 응답
             return ResponseEntity.ok(Map.of("code", "ok"));

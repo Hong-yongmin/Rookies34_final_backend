@@ -43,12 +43,7 @@ public class ProductService {
     public int countList(ListType listType, Long categoryId) {
         return switch (listType) {
             case ALL      -> repository.countByCategory(null);
-            case CATEGORY -> {
-                if (categoryId == null) {
-                    throw new IllegalArgumentException("category_id는 CATEGORY 조회 시 필수입니다.");
-                }
-                yield repository.countByCategory(categoryId);
-            }
+            case CATEGORY -> repository.countByCategory(categoryId);
             case BEST    -> repository.countByCuration("BEST");
             case SALE    -> repository.countByCuration("SALE");
             case NEW     -> repository.countByCuration("NEW_ARRIVAL");
