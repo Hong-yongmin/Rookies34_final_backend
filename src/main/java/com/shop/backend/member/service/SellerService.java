@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +17,7 @@ public class SellerService {
     private final UserRepository userRepository;
     private final FileUploader fileUploader;
     private final JwtUtil jwtUtil;
+    private final SellerCertificateLinkService certificateLinks;
 
     private static final String CERT_DIR = "cert"; // 사업자등록증 저장 폴더 ({uploadDir}/cert)
 
@@ -68,17 +67,18 @@ public class SellerService {
 
     public SellerInfoResponse getSellerInfo(String id){
         SellerInfo info = sellerRepository.getSellerInfo(id);
-        // DB의 파일 경로로 다운로드 API 주소 생성 (경로에 '/' 등이 있으므로 URL 인코딩)
-        String certPath = info.getCert_file_url();
-        if (!isBlank(certPath)) {
-            info.setCert_download_url("/api/seller/cert-file?path="
-                    + URLEncoder.encode(certPath, StandardCharsets.UTF_8).replace("+", "%20"));
+        if (!isBlank(info.getCert_file_url())) {
+            info.setCert_download_url(certificateLinks.createLink(id));
         }
 
         return SellerInfoResponse.builder()
                 .code("ok")
                 .sellerInfo(info)
                 .build();
+    }
+
+    public String getCertificatePath(String id) {
+        return sellerRepository.getSellerInfo(id).getCert_file_url();
     }
 
     public MemberResponse changeSellerInfo(String id, SellerProfileRequest req){

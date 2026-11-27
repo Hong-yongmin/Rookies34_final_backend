@@ -7,9 +7,12 @@ import com.shop.backend.global.security.SellerChecker;
 import com.shop.backend.member.controller.SellerController;
 import com.shop.backend.member.dto.SellerInfo;
 import com.shop.backend.member.repository.SellerRepository;
+import com.shop.backend.member.service.SellerCertificateLinkService;
 import com.shop.backend.member.service.SellerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,13 +29,42 @@ class SellerCertificateDownloadTest {
 
     @TempDir Path uploadRoot;
 
-    @Test
-    void profileReturnsAnEncodedUrlThatDownloadsTheCertificate() throws Exception {
-        String path = "cert/사업자 등록증+1.pdf";
+    @ParameterizedTest
+    @ValueSource(strings = {"cert/", "/backend-shop/uploads/products/"})
+    void profileLinkDownloadsTheCertificateWithoutAnAuthorizationHeader(String prefix) throws Exception {
+        String filename = "사업자 등록증+1.pdf";
         byte[] certificate = {1, 2, 3};
-        Files.createDirectory(uploadRoot.resolve("cert"));
-        Files.write(uploadRoot.resolve(path), certificate);
+        Path directory = uploadRoot.resolve(prefix.equals("cert/") ? "cert" : "products");
+        Files.createDirectory(directory);
+        Files.write(directory.resolve(filename), certificate);
+        var mvc = createMvc(prefix + filename);
 
+        var profile = mvc.perform(get("/api/seller/profile").requestAttr(JwtAuthenticationFilter.MEMBER_ID, "seller"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                .andReturn().getResponse().getContentAsString();
+        String url = tools.jackson.databind.json.JsonMapper.builder().build()
+                .readTree(profile).path("cert_download_url").stringValue();
+
+        mvc.perform(get(URI.create(url)))
+                .andExpect(status().isOk())
+                .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
+                .andExpect(content().bytes(certificate));
+        mvc.perform(get(URI.create(url)).requestAttr(JwtAuthenticationFilter.MEMBER_ID, "other"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/seller/cert-file").param("download_token", "invalid"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void redirectsToTheSharedSampleWhenItIsHostedByTheWebServer() throws Exception {
+        var mvc = createMvc("/dummy-images/cert/sample.png");
+        mvc.perform(get("/api/seller/cert-file").requestAttr(JwtAuthenticationFilter.MEMBER_ID, "seller"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/dummy-images/cert/sample.png"));
+    }
+
+    private org.springframework.test.web.servlet.MockMvc createMvc(String path) {
         SellerRepository repository = mock(SellerRepository.class);
         when(repository.getSellerInfo("seller")).thenAnswer(call ->
                 SellerInfo.builder().cert_file_url(path).build());
@@ -40,19 +72,10 @@ class SellerCertificateDownloadTest {
         when(sellerChecker.isSeller("seller")).thenReturn(true);
         FileDownloader downloader = new FileDownloader();
         ReflectionTestUtils.setField(downloader, "uploadDir", uploadRoot.toString());
-        var service = new SellerService(repository, null, null, null);
-        var mvc = MockMvcBuilders.standaloneSetup(new SellerController(
-                service, sellerChecker, mock(AdminChecker.class), downloader)).build();
-
-        String url = "/api/seller/cert-file?path=cert%2F%EC%82%AC%EC%97%85%EC%9E%90%20%EB%93%B1%EB%A1%9D%EC%A6%9D%2B1.pdf";
-        mvc.perform(get("/api/seller/profile").requestAttr(JwtAuthenticationFilter.MEMBER_ID, "seller"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cert_download_url").value(url));
-        verify(repository).getSellerInfo("seller");
-
-        mvc.perform(get(URI.create(url)).requestAttr(JwtAuthenticationFilter.MEMBER_ID, "seller"))
-                .andExpect(status().isOk())
-                .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
-                .andExpect(content().bytes(certificate));
+        ReflectionTestUtils.setField(downloader, "productUploadDir", uploadRoot.resolve("products").toString());
+        var links = new SellerCertificateLinkService();
+        var service = new SellerService(repository, null, null, null, links);
+        return MockMvcBuilders.standaloneSetup(new SellerController(
+                service, sellerChecker, mock(AdminChecker.class), downloader, links)).build();
     }
 }
