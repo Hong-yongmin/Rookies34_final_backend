@@ -1,6 +1,7 @@
 package com.shop.backend.coupon.controller;
 
 import com.shop.backend.coupon.dto.AdminCouponResponse;
+import com.shop.backend.coupon.dto.CouponListResponse;
 import com.shop.backend.coupon.dto.GenerateCouponRequest;
 import com.shop.backend.coupon.dto.GrantCouponRequest;
 import com.shop.backend.coupon.service.AdminCouponService;
@@ -18,6 +19,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class AdminCouponController {
     private final AdminCouponService adminCouponService;
     private final AdminChecker adminChecker;
+
+    @GetMapping
+    public ResponseEntity<CouponListResponse> getCoupons(
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String date_from,
+            @RequestParam(required = false) String date_to
+    ){
+        if(!adminChecker.isAdmin(id)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 권한 필요");
+        }
+        return ResponseEntity.ok(adminCouponService.getCoupons(page, status, date_from, date_to));
+    }
 
     @PostMapping
     public ResponseEntity<AdminCouponResponse> generateCoupon(

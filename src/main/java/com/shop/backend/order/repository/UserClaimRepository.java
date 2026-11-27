@@ -20,6 +20,8 @@ public class UserClaimRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
 
+    //public
+
     public Integer requestClaim(ClaimRequest req, Integer order_item_id, String user_id){
         /*
          * 취소/환불/반품 신청

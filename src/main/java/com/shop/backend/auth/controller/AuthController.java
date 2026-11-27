@@ -30,8 +30,7 @@ public class AuthController {
 
     @PostMapping("/auth/find-id/sms")
     public ResponseEntity<AuthResponse> findIdAuthSms(
-            @RequestBody String name,
-            @RequestBody String phone){
+            @RequestBody AuthRequest req){
         return ResponseEntity.ok(AuthResponse.builder()
                         .code("ok")
                         .verify_code("123")
@@ -40,16 +39,13 @@ public class AuthController {
 
     @PostMapping("/auth/find-id/sms/verify")
     public ResponseEntity<FindIdResponse> findIdAuthSmsVerify(
-            @RequestBody String phone,
-            @RequestBody String name,
-            @RequestBody String verify_code){
-        return ResponseEntity.ok(authService.findUserIdByPhone(phone));
+            @RequestBody AuthRequest req){
+        return ResponseEntity.ok(authService.findUserIdByPhone(req.getPhone()));
     }
 
     @PostMapping("/auth/find-id/email")
     public ResponseEntity<AuthResponse> findIdAuthEmail(
-            @RequestBody String name,
-            @RequestBody String email){
+            @RequestBody AuthRequest req){
         return ResponseEntity.ok(AuthResponse.builder()
                         .code("ok")
                         .verify_code("123")
@@ -58,18 +54,14 @@ public class AuthController {
 
     @PostMapping("/auth/find-id/email/verify")
     public ResponseEntity<FindIdResponse> findIdAuthEmailVerify(
-            @RequestBody String email,
-            @RequestBody String name,
-            @RequestBody String verify_code
+            @RequestBody AuthRequest req
     ){
-        return ResponseEntity.ok(authService.findUserIdByEmail(email));
+        return ResponseEntity.ok(authService.findUserIdByEmail(req.getEmail()));
     }
 
     @PostMapping("/auth/password-reset/sms")
     public ResponseEntity<AuthResponse> resetPwdAuthSms(
-            @RequestBody String login_id,
-            @RequestBody String name,
-            @RequestBody String phone){
+            @RequestBody AuthRequest req){
         return ResponseEntity.ok(AuthResponse.builder()
                         .code("ok")
                         .verify_code("123")
@@ -78,20 +70,16 @@ public class AuthController {
 
     @PostMapping("/auth/password-reset/sms/verify")
     public ResponseEntity<ResetPasswordResponse> resetPwdAuthSmsVerify(
-            @RequestBody String login_id,
-            @RequestBody String phone,
-            @RequestBody String verify_code){
+            @RequestBody AuthRequest req){
         return ResponseEntity.ok(ResetPasswordResponse.builder()
                         .code("ok")
-                        .reset_token(jwtUtil.generateToken(login_id))
+                        .reset_token(jwtUtil.generateToken(req.getLogin_id()))
                         .build());
     }
 
     @PostMapping("/auth/password-reset/email")
     public ResponseEntity<AuthResponse> resetPwdAuthEmail(
-            @RequestBody String login_id,
-            @RequestBody String name,
-            @RequestBody String email){
+            @RequestBody AuthRequest req){
         return ResponseEntity.ok(AuthResponse.builder()
                         .code("ok")
                         .verify_code("123")
@@ -100,23 +88,20 @@ public class AuthController {
 
     @PostMapping("/auth/password-reset/email/verify")
     public ResponseEntity<ResetPasswordResponse> resetPwdAuthEmailVerify(
-            @RequestBody String login_id,
-            @RequestBody String email,
-            @RequestBody String verify_code) {
+            @RequestBody AuthRequest req) {
         return ResponseEntity.ok(ResetPasswordResponse.builder()
                 .code("ok")
-                .reset_token(jwtUtil.generateToken(login_id))
+                .reset_token(jwtUtil.generateToken(req.getLogin_id()))
                 .build());
     }
 
     @PostMapping("/auth/password-reset")
     public ResponseEntity<AuthResponse> resetPwd(
-            @RequestBody String reset_token,
-            @RequestBody String new_password,
-            @RequestBody String new_password_confirm
+            @RequestBody AuthRequest req
     ){
-        if(Objects.equals(new_password, new_password_confirm) && jwtUtil.extractClaims(reset_token) != null) {
-            return ResponseEntity.ok(authService.resetPassword(jwtUtil.extractClaims(reset_token), new_password));
+        if(Objects.equals(req.getNew_password(), req.getNew_password_confirm())
+                && jwtUtil.extractClaims(req.getReset_token()) != null) {
+            return ResponseEntity.ok(authService.resetPassword(jwtUtil.extractClaims(req.getReset_token()), req.getNew_password()));
         }
         else throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰 또는 패스워드 확인 실패");
     }

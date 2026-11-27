@@ -11,6 +11,6 @@ import java.util.List;
 @Builder
 public class CouponListResponse {
     private String code;
-    private int num;
+    private Integer num;
     List<Coupons> coupons;
 }

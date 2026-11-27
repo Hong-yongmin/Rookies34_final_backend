@@ -1,8 +1,6 @@
 package com.shop.backend.coupon.service;
 
-import com.shop.backend.coupon.dto.AdminCouponResponse;
-import com.shop.backend.coupon.dto.GenerateCouponRequest;
-import com.shop.backend.coupon.dto.GrantCouponRequest;
+import com.shop.backend.coupon.dto.*;
 import com.shop.backend.coupon.repository.AdminCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,16 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class AdminCouponService {
     private final AdminCouponRepository adminCouponRepository;
+
+    public CouponListResponse getCoupons(Integer page, String status, String date_from, String date_to){
+        List<Coupons> coupons = adminCouponRepository.getCoupons(page, status, date_from, date_to);
+
+        return CouponListResponse.builder()
+                .code("ok")
+                .num(coupons.size())
+                .coupons(coupons)
+                .build();
+    }
 
     public AdminCouponResponse generateCoupon(GenerateCouponRequest generateCouponRequest){
         if (adminCouponRepository.generateCoupon(generateCouponRequest)){

@@ -1,7 +1,7 @@
 package com.shop.backend.coupon.repository;
 
+import com.shop.backend.coupon.dto.Coupons;
 import com.shop.backend.coupon.dto.GenerateCouponRequest;
-import com.shop.backend.coupon.dto.GrantCouponRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,6 +12,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminCouponRepository {
     private final JdbcTemplate jdbcTemplate;
+
+    public List<Coupons> getCoupons(Integer page, String status, String date_from, String date_to){
+        /*
+         * 관리자 쿠폰 조회
+         */
+        String sql = "SELECT * FROM coupon WHERE 1=1"; // 조건 추가용 더미 조건 추가
+        if(status != null){
+            sql += " AND status='%s'".formatted(status);
+        }
+        if(date_from != null){
+            sql += " AND valid_from >= STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s')".formatted(date_from);
+        }
+        if(date_to != null){
+            sql += " AND valid_to <= DATE_ADD(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL 1 DAY)".formatted(date_to);
+        }
+        if(page != null && page > 0){
+            sql += " LIMIT 10 OFFSET %d".formatted((page-1)*10);
+        }
+
+        return jdbcTemplate.query(sql, (rs, i)
+                -> Coupons.builder()
+                .coupon_id(rs.getLong("coupon_id"))
+                .coupon_name(rs.getString("coupon_name"))
+                .discount_type(rs.getString("discount_type"))
+                .discount_value(rs.getInt("discount_value"))
+                .min_order_amount(rs.getInt("min_order_amount"))
+                .valid_from(rs.getString("valid_from"))
+                .valid_to(rs.getString("valid_to"))
+                .status(rs.getString("status"))
+                .build());
+    }
 
     public Boolean isValidCoupon(Long coupon_id){
         /*
