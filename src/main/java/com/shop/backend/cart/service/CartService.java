@@ -13,9 +13,9 @@ public class CartService {
     private final CartRepository cartRepository;
 
     public Boolean addItem(String userId, CartItemsRequest req) {
-        if (req.getProduct_id() == null || !cartRepositroy.existsProduct(req.getProduct_id())) return false;
+        if (req.getProduct_id() == null || !cartRepository.existsProduct(req.getProduct_id())) return false;
 
-        List<Integer> cartId = cartRepositroy.findCartId(userId);
+        List<Integer> cartId = cartRepository.findCartId(userId);
         if (cartId.isEmpty()) {
             cartRepository.createCart(userId);
             cartId = cartRepository.findCartId(userId);
@@ -41,7 +41,7 @@ public class CartService {
         res.setTotal_discount(totalDiscount);
         res.setFinal_price(totalPrice - totalDiscount);
 
-        List<Map<String, Object>> selected = cartRepositroy.findSelectedAddress(userId);
+        List<Map<String, Object>> selected = cartRepository.findSelectedAddress(userId);
         if (!selected.isEmpty()) {
             Map<String, Object> s = selected.get(0);
             res.setAddress_id((Integer) s.get("address_id"));
@@ -61,7 +61,7 @@ public class CartService {
     }
 
     public Boolean updateShipping(String userId, CartShippingAddressRequest req) {
-        if (cartRepositroy.findCartId(userId).isEmpty()) cartRepositroy.createCart(userId);
-        return cartRepositroy.updateSelectedAddress(userId, req.getAddress_id());
+        if (cartRepository.findCartId(userId).isEmpty()) cartRepository.createCart(userId);
+        return cartRepository.updateSelectedAddress(userId, req.getAddress_id());
     }
 }
