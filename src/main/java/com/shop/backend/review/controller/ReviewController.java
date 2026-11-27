@@ -8,26 +8,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import com.shop.backend.review.dto.ReviewCreateRequest;
-import com.shop.backend.review.entity.Review;
+import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.JwtUtil;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
-import java.util.List;
 
 @RestController // 아래 클래스가 Rest API 요청을 처리함
 @RequiredArgsConstructor // final 필드를 생성자로 주입
-@RequestMapping("/api/products") // 이 컨트롤러의 공통 URL 지정
+@RequestMapping("/api")
 public class ReviewController {
 
     private final ReviewService reviewService;
     private final JwtUtil jwtUtil;
     // 후기 조회에 필요한 실제 작업을 ReviewService에 맡기기 위해 객체 주입
-    @GetMapping("/{productId}/reviews")
+    @GetMapping("/products/{productId}/reviews")
     // GET /api/products/1/reviews 요청이 들어오면 {productId}에 해당하는 1을 가져옴.
     public ReviewPageResponseDto getReviews(
             @PathVariable("productId") Integer productId,
@@ -37,7 +36,21 @@ public class ReviewController {
         return reviewService.getReviewItems(productId, page > 0 ? page - 1 : page);
         // 조회된 후기 목록 반환
     }
-    @PostMapping("/api/reviews")
+    @GetMapping("/me/reviews/writable")
+    public Map<String, Object> getWritableReviews(
+            @RequestAttribute(name = JwtAuthenticationFilter.MEMBER_ID, required = false) String userId,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        if (userId == null || userId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        if (page < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상이어야 합니다.");
+        }
+        return reviewService.getWritableItems(userId, page);
+    }
+
+    @PostMapping({"/reviews", "/products/api/reviews"})
     public ResponseEntity<Map<String, String>> createReview(
             @RequestHeader("Authorization") String authorization,
             @ModelAttribute ReviewCreateRequest request

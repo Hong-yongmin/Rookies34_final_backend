@@ -33,6 +33,16 @@ public class ReviewService {
     private final ReviewWriterRepository reviewWriterRepository;
     private final ReviewCreateRepository reviewCreateRepository;
 
+    @Transactional(readOnly = true)
+    public Map<String, Object> getWritableItems(String userId, int page) {
+        int pageSize = 10;
+        return Map.of(
+                "code", "ok",
+                "num", reviewCreateRepository.countWritableItems(userId),
+                "items", reviewCreateRepository.findWritableItems(userId, pageSize, (page - 1L) * pageSize)
+        );
+    }
+
     // 상품 후기 조회
     public Page<Review> getReviewsByProductId(Integer productId, int page) {
         PageRequest pageable = PageRequest.of(
@@ -152,6 +162,10 @@ public class ReviewService {
                 throw new IllegalArgumentException(
                         "본인이 구매한 상품만 리뷰를 작성할 수 있습니다."
                 );
+            }
+
+            if (!"COMPLETED".equals(orderItem.get("status")) || "CANCELED".equals(orderItem.get("order_status"))) {
+                throw new IllegalArgumentException("배송 완료된 상품만 후기를 작성할 수 있습니다.");
             }
 
             // 3. 중복 후기 확인
