@@ -20,7 +20,7 @@ public class InquiryDetailResponseDto {
     private String answer;
     private String created_at;
 
-    public InquiryDetailResponseDto(Inquiry inquiry) {
+    public InquiryDetailResponseDto(Inquiry inquiry, String attachment) {
 
         this.code = "ok";
 
@@ -36,13 +36,7 @@ public class InquiryDetailResponseDto {
 
         this.content = inquiry.getContent();
 
-        // 첨부파일이 있으면 다운로드 API 주소 반환
-        this.attachment = inquiry.getAttachment_url() == null
-                || inquiry.getAttachment_url().isBlank()
-                ? null
-                : "/api/inquiries/"
-                + inquiry.getInquiry_id()
-                + "/attachment";
+        this.attachment = attachment;
 
         this.answer = inquiry.getAnswer();
 

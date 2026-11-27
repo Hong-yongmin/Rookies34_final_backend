@@ -32,6 +32,7 @@ public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
     private final InquiryFileService inquiryFileService;
+    private final InquiryAttachmentLinkService attachmentLinkService;
     private final OrderRepository orderRepository;
 
     // 1:1 문의 작성
@@ -163,7 +164,11 @@ public class InquiryService {
             );
         }
 
-        return new InquiryDetailResponseDto(inquiry);
+        String filename = inquiry.getAttachment_url();
+        String attachment = filename == null || filename.isBlank()
+                ? null
+                : attachmentLinkService.createLink(inquiryId, userId);
+        return new InquiryDetailResponseDto(inquiry, attachment);
     }
 
     // 1:1 문의 첨부파일 다운로드 경로 조회

@@ -7,6 +7,7 @@ import com.shop.backend.support.inquiry.dto.InquiryResponseDto;
 import com.shop.backend.support.inquiry.dto.InquiryDetailResponseDto;
 import com.shop.backend.support.inquiry.dto.InquiryListResponseDto;
 import com.shop.backend.support.inquiry.service.InquiryService;
+import com.shop.backend.support.inquiry.service.InquiryAttachmentLinkService;
 import com.shop.backend.global.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ContentDisposition;
@@ -31,6 +33,7 @@ import java.net.MalformedURLException;
 public class InquiryController {
 
     private final InquiryService inquiryService;
+    private final InquiryAttachmentLinkService attachmentLinkService;
 
     // 1:1 문의 작성
     @PostMapping(consumes = "multipart/form-data")
@@ -76,7 +79,7 @@ public class InquiryController {
 
     // 1:1 문의 상세 조회
     @GetMapping("/{inquiryId}")
-    public InquiryDetailResponseDto getInquiryDetail(
+    public ResponseEntity<InquiryDetailResponseDto> getInquiryDetail(
             @RequestAttribute(
                     value = JwtAuthenticationFilter.MEMBER_ID,
                     required = false
@@ -91,7 +94,9 @@ public class InquiryController {
             );
         }
 
-        return inquiryService.getInquiryDetail(inquiryId, userId);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(inquiryService.getInquiryDetail(inquiryId, userId));
     }
 
     // 1:1 문의 첨부파일 다운로드
@@ -102,24 +107,20 @@ public class InquiryController {
                     required = false
             ) String userId,
 
-            @PathVariable Integer inquiryId
+            @PathVariable("inquiryId") Integer inquiryId,
+            @RequestParam(name = "download_token", required = false) String downloadToken
     ) throws MalformedURLException {
 
-        if (userId == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "로그인이 필요합니다."
-            );
-        }
-
+        String owner = userId == null ? attachmentLinkService.getOwner(inquiryId, downloadToken) : userId;
         Path filePath =
-                inquiryService.getInquiryAttachment(inquiryId, userId);
+                inquiryService.getInquiryAttachment(inquiryId, owner);
 
         Resource resource = new UrlResource(filePath.toUri());
 
         String filename = filePath.getFileName().toString();
 
         return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
