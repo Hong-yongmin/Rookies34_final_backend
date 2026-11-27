@@ -22,7 +22,7 @@ public class SellerInquiryRepository {
     // 받은 문의 목록 (S-12) — 내 상품(seller_id)에 달린 문의, 상품명 JOIN
     public List<SellerInquiryResponse> getMyInquiries(String sellerId, int page) {
         String sql = ("SELECT i.inquiry_id, i.product_id, p.name AS product_name, i.title, i.content, "
-                + "i.is_secret, i.answer, i.created_at "
+                + "i.is_secret, i.answer, i.answered_at, i.created_at "
                 + "FROM product_inquiry i, product p "
                 + "WHERE i.product_id=p.product_id AND p.seller_id='%s' "
                 + "ORDER BY i.created_at DESC LIMIT 10 OFFSET %d")
@@ -37,6 +37,8 @@ public class SellerInquiryRepository {
                         .content(rs.getString("content"))
                         .is_secret(rs.getBoolean("is_secret"))
                         .is_answered(rs.getString("answer") != null)
+                        .answer(rs.getString("answer"))             // 답변 내용
+                        .answered_at(rs.getString("answered_at"))   // 답변일
                         .created_at(rs.getString("created_at"))
                         .build());
     }

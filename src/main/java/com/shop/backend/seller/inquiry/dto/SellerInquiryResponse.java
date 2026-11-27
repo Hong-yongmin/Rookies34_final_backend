@@ -15,5 +15,7 @@ public class SellerInquiryResponse {
     private String content;        // 판매자는 비밀글도 내용 봄
     private boolean is_secret;
     private boolean is_answered;    // 답변 여부
+    private String answer;          // 답변 내용 (없으면 null)
+    private String answered_at;     // 답변일 (없으면 null)
     private String created_at;
 }
