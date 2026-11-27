@@ -22,7 +22,7 @@ public class ProductController {
     // GET /api/products?list_type=CATEGORY&category_id=1&sort=PRICE_ASC&page=1
     @GetMapping
     public Map<String, Object> list(
-            @RequestParam(name = "list_type") ListType listType,
+            @RequestParam(name = "list_type", defaultValue = "CATEGORY") ListType listType,
             @RequestParam(name = "category_id", required = false) Long categoryId,
             @RequestParam(required = false) ProductSort sort,
             @RequestParam(defaultValue = "1") int page) {

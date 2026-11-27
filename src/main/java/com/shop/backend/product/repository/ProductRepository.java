@@ -17,6 +17,9 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class ProductRepository {
+    // 주문 금액과 동일하게 할인액의 원 미만을 버린다.
+    private static final String DISCOUNTED_PRICE = "(price - (price * COALESCE(discount_rate, 0) DIV 100))";
+
     private final JdbcTemplate jdbcTemplate;
     private final CommonFunction cf;
 
@@ -24,8 +27,8 @@ public class ProductRepository {
     private String orderBy(ProductSort sort) {
         if (sort == null) return "ORDER BY created_at DESC";
         return switch (sort) {
-            case PRICE_ASC      -> "ORDER BY price ASC";
-            case PRICE_DESC     -> "ORDER BY price DESC";
+            case PRICE_ASC      -> "ORDER BY " + DISCOUNTED_PRICE + " ASC, product_id ASC";
+            case PRICE_DESC     -> "ORDER BY " + DISCOUNTED_PRICE + " DESC, product_id ASC";
             case NEW, RECOMMEND -> "ORDER BY created_at DESC";
         };
     }
@@ -44,9 +47,15 @@ public class ProductRepository {
 
     // 카테고리별 목록 (U-20)
     public List<ProductSummaryResponse> getListByCategory(Long categoryId, ProductSort sort, int page) {
+        // 전체 카테고리는 자신을 부모로 참조한다.
+        String categoryFilter = categoryId == null || categoryId == 0
+                ? ""
+                : ("AND (category_id = %1$d OR EXISTS (SELECT 1 FROM category c "
+                        + "WHERE c.category_id = %1$d AND c.parent_id = c.category_id)) ")
+                        .formatted(categoryId);
         String sql = ("SELECT product_id, name, category_id, price, discount_rate, thumbnail_url "
-                + "FROM product WHERE category_id=%d AND status='APPROVED' %s LIMIT 20 OFFSET %d")
-                .formatted(categoryId, orderBy(sort), (page - 1) * 20);
+                + "FROM product WHERE status='APPROVED' %s%s LIMIT 20 OFFSET %d")
+                .formatted(categoryFilter, orderBy(sort), (page - 1) * 20);
         return jdbcTemplate.query(sql, this::mapSummary);
     }
 
