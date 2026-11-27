@@ -4,12 +4,12 @@ import com.shop.backend.seller.product.dto.SellerProductRequest;
 import com.shop.backend.seller.product.dto.SellerProductResponse;
 import com.shop.backend.seller.product.repository.SellerProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SellerProductService {
     private final SellerProductRepository sellerProductRepository;
+
+    // 상품 이미지 저장 절대경로 (properties 없으면 기본값 사용)
+    @Value("${file.product-upload-dir:/var/shop/uploads/products}")
+    private String productUploadDir;
 
     // 내 상품 목록 조회 (S-11)
     public List<SellerProductResponse> getMyProducts(String sellerId, String status, String keyword, int page) {
@@ -70,14 +74,12 @@ public class SellerProductService {
             return null;    // 파일 없으면 null
         }
         try {
-            String uploadDir = "uploads/products/";
-            Files.createDirectories(Paths.get(uploadDir));  // 폴더 없으면 생성
+            Files.createDirectories(Paths.get(productUploadDir));  // 폴더 없으면 생성
 
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path target = Paths.get(uploadDir, filename);
-            file.transferTo(target.toAbsolutePath());   // 실제 파일 저장
+            file.transferTo(Paths.get(productUploadDir, filename));   // 실제 파일 저장(절대경로)
 
-            return "/" + uploadDir + filename;  // DB에 저장할 경로
+            return "/uploads/products/" + filename;  // DB엔 URL만 (물리경로 X) → WebConfig가 서빙
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
         }
