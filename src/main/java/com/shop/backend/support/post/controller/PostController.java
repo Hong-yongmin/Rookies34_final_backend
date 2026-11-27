@@ -20,9 +20,9 @@ public class PostController {
     // 공지사항 목록 조회
     @GetMapping("/api/notices")
     public NoticeListResponseDto getNotices(
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(name = "page", defaultValue = "1") int page
     ) {
-        return postService.getNotices(page);
+        return postService.getNotices(page > 0 ? page - 1 : page);
     }
 
     // 공지사항 상세 조회
@@ -36,9 +36,9 @@ public class PostController {
     // FAQ 목록 조회
     @GetMapping("/api/faqs")
     public FaqListResponseDto getFaqs(
-            @RequestParam(required = false) FaqCategory category,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(name = "category", required = false) FaqCategory category,
+            @RequestParam(name = "page", defaultValue = "1") int page
     ) {
-        return postService.getFaqs(category, page);
+        return postService.getFaqs(category, page > 0 ? page - 1 : page);
     }
 }

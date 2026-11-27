@@ -17,6 +17,14 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class ProductRepository {
+    private static final String PURCHASED_PRODUCTS = """
+            FROM orders o
+            JOIN order_item oi ON oi.order_id = o.order_id
+            JOIN product p ON p.product_id = oi.product_id
+            WHERE o.user_id = ? AND o.status <> 'CANCELED'
+              AND oi.status <> 'CANCELED' AND p.status = 'APPROVED'
+            """;
+
     // 주문 금액과 동일하게 할인액의 원 미만을 버린다.
     private static final String DISCOUNTED_PRICE = "(price - (price * COALESCE(discount_rate, 0) DIV 100))";
 
@@ -43,6 +51,22 @@ public class ProductRepository {
                 .discount_rate(rs.getInt("discount_rate"))
                 .thumbnail(rs.getString("thumbnail_url"))
                 .build();
+    }
+
+    public long countPurchasedProducts(String userId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT p.product_id) " + PURCHASED_PRODUCTS, Long.class, userId);
+    }
+
+    public List<ProductSummaryResponse> getFrequentlyPurchasedProducts(String userId, int pageSize, long offset) {
+        String sql = """
+                SELECT p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail_url
+                """ + PURCHASED_PRODUCTS + """
+                GROUP BY p.product_id, p.name, p.category_id, p.price, p.discount_rate, p.thumbnail_url
+                ORDER BY COUNT(DISTINCT o.order_id) DESC, MAX(o.ordered_at) DESC, p.product_id ASC
+                LIMIT ? OFFSET ?
+                """;
+        return jdbcTemplate.query(sql, this::mapSummary, userId, pageSize, offset);
     }
 
     // 카테고리별 목록 (U-20)

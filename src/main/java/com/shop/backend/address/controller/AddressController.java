@@ -1,67 +1,49 @@
 package com.shop.backend.address.controller;
 
-import com.shop.backend.address.dto.AddressCreateRequest;
-import com.shop.backend.address.dto.AddressResponse;
-import com.shop.backend.address.dto.AddressUpdateRequest;
-import com.shop.backend.address.dto.AddressesResponse;
+import com.shop.backend.address.dto.*;
 import com.shop.backend.address.service.AddressService;
-import com.shop.backend.global.security.JwtAuthenticationFilter;
 import com.shop.backend.global.security.UserChecker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/me/addresses")
 public class AddressController {
-
     private final AddressService addressService;
     private final UserChecker userChecker;
 
-    // 배송지 추가
-    @PostMapping("/me/addresses")
-    public ResponseEntity<AddressResponse> addAddress(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
-            @RequestBody AddressCreateRequest req) {
-        if(!userChecker.isUser(id)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
-        }
-        return ResponseEntity.ok(addressService.addAddress(req, id));
+    private static final Map<String, String> NO = Map.of("code", "no");
+    private static final Map<String, String> OK = Map.of("code", "ok");
+
+    @GetMapping
+    public Object getMyAddresses(@RequestAttribute(name = "memberid", required = false) String userId) {
+        if (!userChecker.isUser(userId)) return NO;
+        return addressService.getAddresses(userId);
     }
 
-    // 배송지 수정
-    @PutMapping("/me/addresses/{addressId}")
-    public ResponseEntity<AddressResponse> updateAddress(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
-            @PathVariable Integer addressId,
-            @RequestBody AddressUpdateRequest req) {
-        if(!userChecker.isUser(id)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
-        }
-        return ResponseEntity.ok(addressService.updateAddress(addressId, req));
+    @PostMapping
+    public Map<String, String> addAddress(@RequestAttribute(name = "memberid", required = false) String userId,
+                                          @RequestBody AddressCreateRequest req) {
+        if (!userChecker.isUser(userId)) return NO;
+        if ("ok".equals(addressService.addAddress(req, userId).getCode())) return OK;
+        return NO;
     }
 
-    // 배송지 삭제
-    @DeleteMapping("/me/addresses/{addressId}")
-    public ResponseEntity<AddressResponse> deleteAddress(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
-            @PathVariable Integer addressId) {
-        if(!userChecker.isUser(id)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
-        }
-        return ResponseEntity.ok(addressService.deleteAddress(addressId));
+    @PutMapping("/{addressId}")
+    public Map<String, String> updateAddress(@RequestAttribute(name = "memberid", required = false) String userId,
+                                             @PathVariable("addressId") Integer addressId, @RequestBody AddressUpdateRequest req) {
+        if (!userChecker.isUser(userId)) return NO;
+        if ("ok".equals(addressService.updateAddress(userId, addressId, req).getCode())) return OK;
+        return NO;
     }
 
-    // 배송지 조회
-    @GetMapping("/me/addresses")
-    public ResponseEntity<AddressesResponse> getAddresses(
-            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id){
-        if(!userChecker.isUser(id)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 필요");
-        }
-        return ResponseEntity.ok(addressService.getAddresses(id));
+    @DeleteMapping("/{addressId}")
+    public Map<String, String> deleteAddress(@RequestAttribute(name = "memberid", required = false) String userId,
+                                             @PathVariable("addressId") Integer addressId) {
+        if (!userChecker.isUser(userId)) return NO;
+        if ("ok".equals(addressService.deleteAddress(userId, addressId).getCode())) return OK;
+        return NO;
     }
 }

@@ -5,8 +5,6 @@ import com.shop.backend.address.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AddressService {
@@ -19,14 +17,14 @@ public class AddressService {
     }
 
     // 수정
-    public AddressResponse updateAddress(Integer addressId, AddressUpdateRequest req) {
-        boolean success = addressRepository.updateAddress(addressId, req);
+    public AddressResponse updateAddress(String userId, Integer addressId, AddressUpdateRequest req) {
+        boolean success = addressRepository.updateAddress(userId, addressId, req);
         return AddressResponse.builder().code(success ? "ok" : "no").build();
     }
 
     // 삭제
-    public AddressResponse deleteAddress(Integer addressId) {
-        boolean success = addressRepository.deleteAddress(addressId);
+    public AddressResponse deleteAddress(String userId, Integer addressId) {
+        boolean success = addressRepository.deleteAddress(userId, addressId);
         return AddressResponse.builder().code(success ? "ok" : "no").build();
     }
 

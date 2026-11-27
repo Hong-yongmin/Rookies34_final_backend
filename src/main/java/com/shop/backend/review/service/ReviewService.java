@@ -12,9 +12,11 @@ import com.shop.backend.review.entity.ReviewImage;
 import com.shop.backend.review.dto.ReviewItemDto;
 import com.shop.backend.review.dto.ReviewPageResponseDto;
 import com.shop.backend.review.dto.ReviewCreateRequest;
+import com.shop.backend.review.dto.WrittenReviewItem;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,33 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewWriterRepository reviewWriterRepository;
     private final ReviewCreateRepository reviewCreateRepository;
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getWrittenReviews(String userId, int page) {
+        int pageSize = 10;
+        long total = reviewCreateRepository.countWrittenReviews(userId);
+        var rows = reviewCreateRepository.findWrittenReviews(userId, pageSize, (page - 1L) * pageSize);
+        List<Integer> reviewIds = rows.stream().map(ReviewCreateRepository.WrittenReviewRow::reviewId).toList();
+        Map<Integer, List<String>> images = reviewIds.isEmpty() ? Map.of()
+                : reviewImageRepository.findByReviewIds(reviewIds).stream().collect(Collectors.groupingBy(
+                        ReviewImage::getReview_id, Collectors.mapping(ReviewImage::getUrl, Collectors.toList())));
+        List<WrittenReviewItem> reviews = rows.stream()
+                .map(row -> new WrittenReviewItem(
+                        row.reviewId(), row.productId(), row.productName(), row.rating(),
+                        row.content(), row.createdAt(), images.getOrDefault(row.reviewId(), List.of())))
+                .toList();
+        return Map.of("code", "ok", "num", total, "reviews", reviews);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getWritableItems(String userId, int page) {
+        int pageSize = 10;
+        return Map.of(
+                "code", "ok",
+                "num", reviewCreateRepository.countWritableItems(userId),
+                "items", reviewCreateRepository.findWritableItems(userId, pageSize, (page - 1L) * pageSize)
+        );
+    }
 
     // 상품 후기 조회
     public Page<Review> getReviewsByProductId(Integer productId, int page) {
@@ -152,6 +181,10 @@ public class ReviewService {
                 throw new IllegalArgumentException(
                         "본인이 구매한 상품만 리뷰를 작성할 수 있습니다."
                 );
+            }
+
+            if (!"COMPLETED".equals(orderItem.get("status")) || "CANCELED".equals(orderItem.get("order_status"))) {
+                throw new IllegalArgumentException("배송 완료된 상품만 후기를 작성할 수 있습니다.");
             }
 
             // 3. 중복 후기 확인
