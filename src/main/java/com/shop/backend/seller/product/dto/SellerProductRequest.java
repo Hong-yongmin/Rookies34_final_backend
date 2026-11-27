@@ -3,12 +3,15 @@ package com.shop.backend.seller.product.dto;
 import com.shop.backend.product.dto.PackagingType;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class SellerProductRequest {
 
     private String name;                // 상품명

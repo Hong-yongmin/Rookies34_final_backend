@@ -18,6 +18,18 @@ public class AdminSettlementController {
     private final AdminSettlementService adminSettlementService;
     private final AdminChecker adminChecker;
 
+    @PatchMapping("/sellers/{sellerId}/commission-rate")
+    public ResponseEntity<SettlementResponse> setCommissionRate(
+            @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
+            @PathVariable("sellerId") String seller_id,
+            @RequestBody CommissionRateRequest req
+    ){
+        if(!adminChecker.isAdmin(id)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 권한 필요");
+        }
+        return ResponseEntity.ok(adminSettlementService.setCommissionRate(seller_id, req.getCommission_rate()));
+    }
+
     @GetMapping("/settlements")
     public ResponseEntity<AdminRevenueResponse> getRevenues(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
@@ -28,6 +40,8 @@ public class AdminSettlementController {
         }
         return ResponseEntity.ok(adminSettlementService.getRevenues(req));
     }
+
+
 
     @GetMapping("/withdrawals")
     public ResponseEntity<AdminWithdrawalResponse> getWithdrawals(
@@ -40,27 +54,27 @@ public class AdminSettlementController {
         return ResponseEntity.ok(adminSettlementService.getWithdrawals(req));
     }
 
-    @PatchMapping("/{settlementId}")
+    @PatchMapping("/settlements/{settlementId}")    // 정산 확정 (A-10)
     public ResponseEntity<SettlementResponse> confirmSettlement(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("settlementId") Integer settlement_id,
-            @RequestBody String decision
+            @RequestBody DecisionRequest req
     ){
         if(!adminChecker.isAdmin(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 권한 필요");
         }
-        return ResponseEntity.ok(adminSettlementService.confirmSettlement(settlement_id, decision));
+        return ResponseEntity.ok(adminSettlementService.confirmSettlement(settlement_id, req.getDecision()));
     }
 
-    @PatchMapping("/{withdrawalId}")
+    @PatchMapping("/withdrawals/{withdrawalId}")    // 출금 승인 (A-10)
     public ResponseEntity<SettlementResponse> confirmWithdrawal(
             @RequestAttribute(value= JwtAuthenticationFilter.MEMBER_ID, required=false) String id,
             @PathVariable("withdrawalId") Integer withdrawal_id,
-            @RequestBody String decision
+            @RequestBody DecisionRequest req
     ){
         if(!adminChecker.isAdmin(id)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자 권한 필요");
         }
-        return ResponseEntity.ok(adminSettlementService.confirmSettlement(withdrawal_id, decision));
+        return ResponseEntity.ok(adminSettlementService.confirmWithdrawals(withdrawal_id, req.getDecision()));
     }
 }

@@ -20,7 +20,7 @@ public class AdminSettlementRepository {
          * 쿼리 성공 시 true 반환
          */
         String sql = "UPDATE commission_rate SET commission_rate='%s' WHERE seller_id='%s'".formatted(rate, id);
-        return !jdbcTemplate.queryForList(sql).isEmpty();
+        return jdbcTemplate.update(sql) > 0;
     }
 
     public List<Revenue> getRevenues(AdminRevenueRequest req){
@@ -104,7 +104,7 @@ public class AdminSettlementRepository {
          * 관리자 정산 확정
          */
         String sql = "UPDATE settlement SET status='%s' WHERE settlement_id='%d'".formatted(decision, settlement_id);
-        return !jdbcTemplate.queryForList(sql).isEmpty();
+        return jdbcTemplate.update(sql) > 0;
     }
 
     public Boolean confirmWithdrawal(Integer withdrawal_id, String decision){
@@ -114,6 +114,6 @@ public class AdminSettlementRepository {
         String sql = ("UPDATE withdrawal SET withdrawal_id='%s', processed_at=now() "
                 + "WHERE withdrawal_id='%s'").formatted(decision, withdrawal_id);
 
-        return !jdbcTemplate.queryForList(sql).isEmpty();
+        return jdbcTemplate.update(sql) > 0;
     }
 }

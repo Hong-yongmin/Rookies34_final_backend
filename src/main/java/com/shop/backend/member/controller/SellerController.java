@@ -19,7 +19,7 @@ public class SellerController {
     private final SellerService sellerService;
     private final SellerChecker sellerChecker;
 
-    @PostMapping("/sellers") // multipart 폼 필드로 수신, business_cert_file은 base64 문자열
+    @PostMapping("/sellers") // multipart/form-data로 수신, business_cert_file은 파일
     public ResponseEntity<MemberResponse> signup(@ModelAttribute SellerSignupRequest req){
         return ResponseEntity.status(HttpStatus.OK).body(sellerService.signupSeller(req));
     }
