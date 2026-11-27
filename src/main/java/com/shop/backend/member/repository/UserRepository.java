@@ -63,7 +63,7 @@ public class UserRepository {
                         .zipcode(req.getZipcode())
                         .address(req.getAddress())
                         .address_detail(req.getAddress_detail())
-                        .is_default(false)                                  // 회원가입 시 등록 주소는 default X
+                        .is_default(true)                                   // 회원가입 시 등록 주소가 첫 배송지 → 기본 배송지
                         .build());
     }
 
